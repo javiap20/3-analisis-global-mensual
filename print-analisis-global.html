@@ -121,6 +121,39 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
 .rank-name { font-weight: 500; color: #94a3b8; max-width: 60%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rank-value { font-weight: 700; color: var(--text); display: flex; align-items: center; }
 .rank-pct { font-size: 0.85em; margin-left: 8px; font-weight: bold; min-width: 45px; text-align: right; }
+
+
+/* Bloque Análisis IA - Negro Elegante */
+#ia-analysis-container {
+    margin: 40px 0;
+    padding: 30px;
+    background: #000000; /* Negro */
+    border-radius: 15px;
+    border: 1px solid #334155;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    color: #e5e7eb;
+    display: none;
+}
+
+#ia-analysis-container h2 {
+    color: #818cf8;
+    border-bottom: 1px solid #312e81;
+    padding-bottom: 15px;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ia-insight-card { 
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px; 
+    border-radius: 12px; 
+    border-left: 4px solid #6366f1; 
+    margin-bottom: 20px;
+}
+
+
 </style>
 </head>
 
@@ -243,7 +276,16 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
   </div>
 </div>
 
-
+<div id="ia-analysis-container" class="container">
+    <h2>
+        <svg style="width:30px; height:30px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        Análisis detallado de la selección anterior
+    </h2>
+    <div id="ia-content">
+        </div>
+</div>
 
 <script>
 const excelUrl = "PRODUCCION%20PRINT.xlsx";
@@ -540,43 +582,252 @@ function render(){
   
   renderRankings(mixBase, mixComp);
 
-// Mostrar bloques y actualizar títulos personalizados
+// 1. Mostrar bloques y actualizar títulos personalizados
   mainTitleEl.style.display = "block";
   brandRankings.style.setProperty('display', 'flex', 'important');
 
   const famText = famF.length > 0 ? famF.join(", ") : "Todas";
   const areaText = areaF.length > 0 ? areaF.join(", ") : "Todas";
 
-  // Título 1: Familias (Muestra la lista al lado de la palabra Familias)
+  // Título 1: Familias
   famTitleDisplay.innerHTML = `Total Ingresos Familias <span style="font-size: 0.75em; opacity: 0.8; text-transform: none; font-weight: normal;">(${famText})</span>`;
 
-  // Título 2: Mix (Separa las familias después de "Familia" y las áreas después de "Área")
+  // Título 2: Mix
   mixTitleDisplay.innerHTML = `Ingresos Familia <span style="font-size: 0.7em; opacity: 0.8; text-transform: none; font-weight: normal;">(${famText})</span> + Área <span style="font-size: 0.7em; opacity: 0.8; text-transform: none; font-weight: normal;">(${areaText})</span>`;
 
-  // Título 3: Ingresos Restantes (Solo muestra el área restada)
+  // Título 3: Ingresos Restantes
   if (areaF.length > 0) {
       restTitleDisplay.innerHTML = `Ingresos totales menos <span style="font-size: 0.75em; opacity: 0.8; text-transform: none; font-weight: normal;">(${areaText})</span>`;
   } else {
-      // Si no hay áreas seleccionadas, volvemos al título genérico
       restTitleDisplay.textContent = "Ingresos Restantes";
   }
 
-// --- ACTUALIZACIÓN DE SECTORES ---
+  // 2. Actualización de Sectores
   const sectorMainTitle = document.getElementById("sectorMainTitle");
   if (labels.length > 0) {
       sectorMainTitle.textContent = "RANKING SECTORES: " + labels.join(" | ");
   } else {
       sectorMainTitle.textContent = "RANKING SECTORES: TOTAL FACTURACIÓN";
   }
-
   document.getElementById("sectorTitleBase").textContent = `TOP 25 SECTORES BASE (${y1})`;
-
-  renderSectorRankings(mixBase, mixComp); // Usamos mixBase para que respete filtros de Familias/Áreas
-
+  renderSectorRankings(mixBase, mixComp);
   sectorMainTitle.style.display = "block";
   document.getElementById("sectorRankings").style.display = "block";
 
+  // 3. Lanzar análisis de IA
+  runIAAnalysis(mixBase, mixComp, y1, y2);
+
+} // <-- ESTA ES LA ÚNICA LLAVE QUE DEBE HABER AL FINAL
+
+
+
+function runIAAnalysis(dataBase, dataComp, y1, y2) {
+    const container = document.getElementById("ia-analysis-container");
+    const content = document.getElementById("ia-content");
+    if (!container || !content) return;
+    
+    container.style.display = "block";
+    content.style.display = "block"; 
+
+    const format = (v) => formatCurrency(v);
+    const getPct = (b, c) => c ? ((b / c - 1) * 100).toFixed(1) : "100";
+
+    const getCausaRaiz = (dimName, valueName, subDim) => {
+        const filtered = dataBase.filter(d => d[dimName] === valueName);
+        const filteredComp = dataComp.filter(d => d[dimName] === valueName);
+        const subMap = filtered.reduce((acc, d) => { acc[d[subDim]] = (acc[d[subDim]] || 0) + d.ingreso; return acc; }, {});
+        const subMapComp = filteredComp.reduce((acc, d) => { acc[d[subDim]] = (acc[d[subDim]] || 0) + d.ingreso; return acc; }, {});
+        const diffs = [...new Set([...Object.keys(subMap), ...Object.keys(subMapComp)])].map(k => ({
+            name: k,
+            diff: (subMap[k] || 0) - (subMapComp[k] || 0)
+        })).sort((a,b) => Math.abs(b.diff) - Math.abs(a.diff));
+        return diffs[0] ? diffs[0] : { name: "N/A", diff: 0 };
+    };
+
+    const getSubBalance = (dimParent, valParent, dimSub) => {
+        const fBase = dataBase.filter(d => d[dimParent] === valParent);
+        const fComp = dataComp.filter(d => d[dimParent] === valParent);
+        const mB = fBase.reduce((acc, d) => { acc[d[dimSub]] = (acc[d[dimSub]] || 0) + d.ingreso; return acc; }, {});
+        const mC = fComp.reduce((acc, d) => { acc[d[dimSub]] = (acc[d[dimSub]] || 0) + d.ingreso; return acc; }, {});
+        const todos = [...new Set([...Object.keys(mB), ...Object.keys(mC)])]
+            .map(k => ({ name: k, diff: (mB[k] || 0) - (mC[k] || 0) }))
+            .sort((a,b) => b.diff - a.diff);
+        return {
+            pos: todos.filter(x => x.diff > 0).slice(0, 3),
+            neg: todos.filter(x => x.diff < 0).sort((a,b) => a.diff - b.diff).slice(0, 3),
+            pos5: todos.filter(x => x.diff > 0).slice(0, 5),
+            neg5: todos.filter(x => x.diff < 0).sort((a,b) => a.diff - b.diff).slice(0, 5),
+            pos10: todos.filter(x => x.diff > 0).slice(0, 10),
+            neg10: todos.filter(x => x.diff < 0).sort((a,b) => a.diff - b.diff).slice(0, 10)
+        };
+    };
+
+    const getDeepStats = (dim) => {
+        const baseMap = dataBase.reduce((acc, d) => { acc[d[dim]] = (acc[d[dim]] || 0) + d.ingreso; return acc; }, {});
+        const compMap = dataComp.reduce((acc, d) => { acc[d[dim]] = (acc[d[dim]] || 0) + d.ingreso; return acc; }, {});
+        return [...new Set([...Object.keys(baseMap), ...Object.keys(compMap)])].map(key => {
+            const vB = baseMap[key] || 0;
+            const vC = compMap[key] || 0;
+            return { name: key, base: vB, comp: vC, diff: vB - vC, pct: getPct(vB, vC) };
+        }).sort((a, b) => b.diff - a.diff);
+    };
+
+    const sections = [
+        { title: "1. AUDITORÍA DE SECTORES", id: "Sector", sub: "Product", labelSub: "Producto Crítico" },
+        { title: "2. ANUNCIANTES GANADOS Y PERDIDOS", id: "Anunciante", sub: "Site", labelSub: "Publicación" },
+        { title: "3. RENDIMIENTO DE PUBLICACIONES (SITES)", id: "Site", sub: "Sector", labelSub: "Sector Responsable" },
+        { title: "4. ANÁLISIS DE ÁREAS", id: "Area", sub: "Anunciante", labelSub: "Anunciante Clave" },
+        { title: "5. COMPORTAMIENTO DE FAMILIAS", id: "Family", sub: "Product", labelSub: "Mix Producto" },
+        { title: "6. MIX DE PRODUCTOS", id: "Product", sub: "Sector", labelSub: "Sector Principal" }
+    ];
+
+    let html = "";
+    sections.forEach(sec => {
+        let allStats = getDeepStats(sec.id);
+        let top5 = allStats.filter(x => x.diff > 0).slice(0, 5);
+        let bottom5 = allStats.sort((a,b) => a.diff - b.diff).filter(x => x.diff < 0).slice(0, 5);
+
+        html += `
+        <div class="ia-insight-card" style="margin-bottom: 40px; border-left: 10px solid #4338ca; width: 100%; box-sizing: border-box;">
+            <h3 style="font-size: 1.6rem; color: #818cf8; margin-bottom: 25px; border-bottom: 2px solid #312e81; padding-bottom: 10px;">${sec.title}</h3>
+            <div style="display: flex; flex-direction: column; gap: 30px;">
+                
+                <div style="background: rgba(110, 231, 183, 0.05); padding: 20px; border-radius: 10px;">
+                    <h4 style="color: var(--diffColor); border-bottom: 1px solid var(--diffColor); padding-bottom: 5px; margin-top: 0; font-size: 0.9rem;">TOP 5 CRECIMIENTO</h4>
+                    ${top5.map(x => {
+                        const causa = getCausaRaiz(sec.id, x.name, sec.sub);
+                        let extra = "";
+                        
+                        if (sec.id === "Sector") {
+                            const balAnu = getSubBalance("Sector", x.name, "Anunciante");
+                            const balProd = getSubBalance("Sector", x.name, "Product");
+                            extra = `<div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div style="font-size:0.75rem; color:#e5e7eb; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;"><b>Anunciantes (Top +):</b><br>${balAnu.pos.map(a => `• ${a.name} (+${format(a.diff)})`).join('<br>')}</div>
+                                <div style="font-size:0.75rem; color:#6ee7b7; background: rgba(110, 231, 183, 0.1); padding: 8px; border-radius: 4px;"><b>Productos (Top +):</b><br>${balProd.pos.map(p => `• ${p.name} (+${format(p.diff)})`).join('<br>')}</div>
+                            </div>`;
+                        }
+
+                        if (sec.id === "Anunciante") {
+                            const areaPrincipal = getCausaRaiz("Anunciante", x.name, "Area");
+                            const balProd = getSubBalance("Anunciante", x.name, "Product");
+                            const balSite = getSubBalance("Anunciante", x.name, "Site");
+                            extra = `<div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+                                <div style="font-size:0.85rem; color:#38bdf8; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;">↳ <b>Área Responsable:</b> ${areaPrincipal.name} (+${format(areaPrincipal.diff)})</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div style="font-size:0.75rem; color:#fbbf24; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;">
+                                        <b>Sites (Balance):</b><br><span style="color:#6ee7b7">↑ ${balSite.pos.map(s => `${s.name} (+${format(s.diff)})`).join('<br>↑ ')}</span><br><span style="color:#f87171">↓ ${balSite.neg.length ? balSite.neg.map(s => `${s.name} (${format(s.diff)})`).join('<br>↓ ') : 'Sin fugas'}</span>
+                                    </div>
+                                    <div style="font-size:0.75rem; color:#e5e7eb; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
+                                        <b>Productos:</b><br><span style="color:#6ee7b7">↑ ${balProd.pos.map(p => `${p.name} (+${format(p.diff)})`).join('<br>↑ ')}</span><br><span style="color:#f87171">↓ ${balProd.neg.length ? balProd.neg.map(p => `${p.name} (${format(p.diff)})`).join('<br>↓ ') : 'Ninguno'}</span>
+                                    </div>
+                                </div>
+                            </div>`;
+                        }
+
+                        if (sec.id === "Site" || sec.id === "Area" || sec.id === "Family" || sec.id === "Product") {
+                            const balSec = getSubBalance(sec.id, x.name, "Sector");
+                            const balAnu = getSubBalance(sec.id, x.name, "Anunciante");
+                            const balProd = getSubBalance(sec.id, x.name, "Product");
+                            const balSite = getSubBalance(sec.id, x.name, "Site");
+                            const balArea = getSubBalance(sec.id, x.name, "Area");
+                            
+                            extra = `<div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                                <div style="font-size:0.8rem; color:#6ee7b7; background: rgba(110, 231, 183, 0.15); padding: 6px; border-radius: 4px;"><b>Sectores (+):</b> ${balSec.pos.map(s => `${s.name} (+${format(s.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#10b981; background: rgba(6, 78, 59, 0.3); padding: 6px; border-radius: 4px;"><b>Sectores (-):</b> ${balSec.neg.map(s => `${s.name} (${format(s.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#fbbf24; background: rgba(251, 191, 36, 0.15); padding: 6px; border-radius: 4px;"><b>Publicaciones (+):</b> ${balSite.pos.map(s => `${s.name} (+${format(s.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#d97706; background: rgba(120, 53, 15, 0.3); padding: 6px; border-radius: 4px;"><b>Publicaciones (-):</b> ${balSite.neg.map(s => `${s.name} (${format(s.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#38bdf8; background: rgba(56, 189, 248, 0.15); padding: 6px; border-radius: 4px;"><b>Áreas (+):</b> ${balArea.pos.map(a => `${a.name} (+${format(a.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#93c5fd; background: rgba(30, 58, 138, 0.3); padding: 6px; border-radius: 4px;"><b>Áreas (-):</b> ${balArea.neg.map(a => `${a.name} (${format(a.diff)})`).join(' | ')}</div>
+                                
+                                <div style="margin-top:5px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <b style="font-size:0.75rem; color:#9ca3af; display:block; margin-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.1);">BALANCE DE ANUNCIANTES (TOP 10 +/-)</b>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                        <div style="font-size:0.7rem; color:#6ee7b7;">${balAnu.pos10.map(a => `↑ ${a.name} (+${format(a.diff)})`).join('<br>')}</div>
+                                        <div style="font-size:0.7rem; color:#f87171;">${balAnu.neg10.map(a => `↓ ${a.name} (${format(a.diff)})`).join('<br>')}</div>
+                                    </div>
+                                </div>
+                            </div>`;
+                        }
+
+                        return `<div style="margin-top: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                            <div style="display:flex; justify-content:space-between; font-size: 1.1rem; font-weight:bold;"><span>${x.name}</span> <span style="color:var(--diffColor)">+${format(x.diff)}</span></div>
+                            <div style="font-size:0.9rem; color:#9ca3af; margin: 5px 0;">Total ${y1}: <b>${format(x.base)}</b> | Incremento: <span style="color:var(--diffColor)">${x.pct}%</span></div>
+                            ${extra}
+                        </div>`;
+                    }).join('')}
+                </div>
+
+                <div style="background: rgba(248, 113, 113, 0.05); padding: 20px; border-radius: 10px;">
+                    <h4 style="color: var(--neg); border-bottom: 1px solid var(--neg); padding-bottom: 5px; margin-top: 0; font-size: 0.9rem;">TOP 5 DECRECIMIENTO</h4>
+                    ${bottom5.map(x => {
+                        const causa = getCausaRaiz(sec.id, x.name, sec.sub);
+                        let extra = "";
+
+                        if (sec.id === "Sector") {
+                            const balAnuNeg = getSubBalance("Sector", x.name, "Anunciante");
+                            const balProdNeg = getSubBalance("Sector", x.name, "Product");
+                            extra = `<div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div style="font-size:0.75rem; color:#e5e7eb; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;"><b>Anunciantes (Top -):</b><br>${balAnuNeg.neg.map(a => `• ${a.name} (${format(a.diff)})`).join('<br>')}</div>
+                                <div style="font-size:0.75rem; color:#f87171; background: rgba(248, 113, 113, 0.1); padding: 8px; border-radius: 4px;"><b>Productos (Top -):</b><br>${balProdNeg.neg.map(p => `• ${p.name} (${format(p.diff)})`).join('<br>')}</div>
+                            </div>`;
+                        }
+
+                        if (sec.id === "Anunciante") {
+                            const areaPrincipal = getCausaRaiz("Anunciante", x.name, "Area");
+                            const balProd = getSubBalance("Anunciante", x.name, "Product");
+                            const balSite = getSubBalance("Anunciante", x.name, "Site");
+                            extra = `<div style="margin-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+                                <div style="font-size:0.85rem; color:#38bdf8; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;">↳ <b>Área Responsable:</b> ${areaPrincipal.name} (${format(areaPrincipal.diff)})</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div style="font-size:0.75rem; color:#fbbf24; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;">
+                                        <b>Sites (Balance):</b><br><span style="color:#6ee7b7">↑ ${balSite.pos.map(s => `${s.name} (+${format(s.diff)})`).join('<br>↑ ')}</span><br><span style="color:#f87171">↓ ${balSite.neg.length ? balSite.neg.map(s => `${s.name} (${format(s.diff)})`).join('<br>↓ ') : 'Sin fugas'}</span>
+                                    </div>
+                                    <div style="font-size:0.75rem; color:#e5e7eb; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">
+                                        <b>Productos:</b><br><span style="color:#6ee7b7">↑ ${balProd.pos.map(p => `${p.name} (+${format(p.diff)})`).join('<br>↑ ')}</span><br><span style="color:#f87171">↓ ${balProd.neg.length ? balProd.neg.map(p => `${p.name} (${format(p.diff)})`).join('<br>↓ ') : 'Ninguno'}</span>
+                                    </div>
+                                </div>
+                            </div>`;
+                        }
+
+                        if (sec.id === "Site" || sec.id === "Area" || sec.id === "Family" || sec.id === "Product") {
+                            const balSec = getSubBalance(sec.id, x.name, "Sector");
+                            const balAnu = getSubBalance(sec.id, x.name, "Anunciante");
+                            const balProd = getSubBalance(sec.id, x.name, "Product");
+                            const balSite = getSubBalance(sec.id, x.name, "Site");
+                            const balArea = getSubBalance(sec.id, x.name, "Area");
+
+                            extra = `<div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                                <div style="font-size:0.8rem; color:#6ee7b7; background: rgba(110, 231, 183, 0.15); padding: 6px; border-radius: 4px;"><b>Sectores (+):</b> ${balSec.pos.map(s => `${s.name} (+${format(s.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#10b981; background: rgba(6, 78, 59, 0.3); padding: 6px; border-radius: 4px;"><b>Sectores (-):</b> ${balSec.neg.map(s => `${s.name} (${format(s.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#fbbf24; background: rgba(251, 191, 36, 0.15); padding: 6px; border-radius: 4px;"><b>Publicaciones (+):</b> ${balSite.pos.map(s => `${s.name} (+${format(s.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#d97706; background: rgba(120, 53, 15, 0.3); padding: 6px; border-radius: 4px;"><b>Publicaciones (-):</b> ${balSite.neg.map(s => `${s.name} (${format(s.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#38bdf8; background: rgba(56, 189, 248, 0.15); padding: 6px; border-radius: 4px;"><b>Áreas (+):</b> ${balArea.pos.map(a => `${a.name} (+${format(a.diff)})`).join(' | ')}</div>
+                                <div style="font-size:0.8rem; color:#93c5fd; background: rgba(30, 58, 138, 0.3); padding: 6px; border-radius: 4px;"><b>Áreas (-):</b> ${balArea.neg.map(a => `${a.name} (${format(a.diff)})`).join(' | ')}</div>
+                                
+                                <div style="margin-top:5px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                    <b style="font-size:0.75rem; color:#9ca3af; display:block; margin-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.1);">BALANCE DE ANUNCIANTES (TOP 10 +/-)</b>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                        <div style="font-size:0.7rem; color:#6ee7b7;">${balAnu.pos10.map(a => `↑ ${a.name} (+${format(a.diff)})`).join('<br>')}</div>
+                                        <div style="font-size:0.7rem; color:#f87171;">${balAnu.neg10.map(a => `↓ ${a.name} (${format(a.diff)})`).join('<br>')}</div>
+                                    </div>
+                                </div>
+                            </div>`;
+                        }
+
+                        return `<div style="margin-top: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                            <div style="display:flex; justify-content:space-between; font-size: 1.1rem; font-weight:bold;"><span>${x.name}</span> <span style="color:var(--neg)">${format(x.diff)}</span></div>
+                            <div style="font-size:0.9rem; color:#9ca3af; margin: 5px 0;">Total ${y1}: <b>${format(x.base)}</b> | Caída: <span style="color:var(--neg)">${x.pct}%</span></div>
+                            ${extra}
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>
+        </div>`;
+    });
+    content.innerHTML = html;
 }
+
+
 </script>
 </body>
 </html>
