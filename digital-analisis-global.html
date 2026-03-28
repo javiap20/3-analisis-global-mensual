@@ -68,7 +68,7 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
 
 .check-container { border: 1px solid rgba(0,0,0,0.1) !important; margin-bottom:10px; }
 .check-container label {
-    color: #111 !important;
+    color: #ffffff !important;
     font-size: 0.85em !important;
     font-weight: 600 !important;
     background: rgba(255,255,255,0.5);
@@ -80,7 +80,10 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
     cursor: pointer;
 }
 
-.checkboxGroup{ display:flex; flex-wrap:wrap; gap:10px; margin-top:5px; }
+.checkboxGroup{ display:flex; flex-wrap:wrap; gap:8px; margin-top:5px; }
+.checkboxGroup label{ font-size:0.72em; color:#cbd5e1; display:flex; align-items:center; gap:4px; cursor:pointer; }
+.checkboxGroup label:hover{ color:#ffffff; }
+.checkboxGroup input[type=checkbox]{ accent-color:#38bdf8; }
 
 .statsBlock{ display:flex; justify-content:center; border-radius:12px; margin:10px 0 25px 0; gap:10px; }
 .subBlock{ border-radius:12px; padding:20px; display:flex; align-items:center; justify-content:center; flex:1; }
@@ -221,8 +224,8 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
     </div>
   </div>
 
-  <div id="familyBlock" class="card check-container" style="display:none; background: var(--familiaBg);">
-    <label style="color:#111; font-weight:bold; margin-bottom:10px; display:block; background:none;">Seleccionar Familias:</label>
+  <div id="familyBlock" class="card check-container" style="display:none;">
+    <label style="color:#ffffff; font-weight:bold; margin-bottom:10px; display:block; background:none;">Seleccionar Familias:</label>
     <div id="familyCheckboxes" class="checkboxGroup"></div>
   </div>
   <div id="statsBlockFam" style="display:none">
@@ -234,8 +237,8 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
     </div>
   </div>
 
-  <div id="areaBlock" class="card check-container" style="display:none; background: var(--areaBlockBg);">
-    <label style="color:#111; font-weight:bold; margin-bottom:10px; display:block; background:none;">Seleccionar Áreas:</label>
+  <div id="areaBlock" class="card check-container" style="display:none;">
+    <label style="color:#ffffff; font-weight:bold; margin-bottom:10px; display:block; background:none;">Seleccionar Áreas:</label>
     <div id="areaCheckboxes" class="checkboxGroup"></div>
   </div>
 
@@ -537,6 +540,22 @@ function renderSectorRankings(dataBase, dataComp) {
 
 function render(){
   const siteF = fSite.value, prodF = fProduct.value, sectF = fSector.value, comF = fComercial.value, y1 = fYear.value, y2 = fYear2.value;
+
+  // Actualizar checkboxes de Familia y Área según el año seleccionado
+  const dataForYear = y1 === "Todos" ? rawData : rawData.filter(d => d.Año === y1);
+
+  const refreshCheckboxes = (containerId, values, cssClass) => {
+    const container = document.getElementById(containerId);
+    const checked = new Set(Array.from(container.querySelectorAll("input:checked")).map(i => i.value));
+    const opts = [...new Set(values.filter(Boolean))].sort();
+    container.innerHTML = opts.map(v =>
+      `<label><input type="checkbox" class="${cssClass}" value="${v}" ${checked.has(v) ? "checked" : ""} onchange="render()"> ${v}</label>`
+    ).join("");
+  };
+
+  refreshCheckboxes("familyCheckboxes", dataForYear.map(d => d.Family), "fam-check");
+  refreshCheckboxes("areaCheckboxes", dataForYear.map(d => d.Area), "area-check");
+
   const famF = Array.from(document.querySelectorAll(".fam-check:checked")).map(c => c.value);
   const areaF = Array.from(document.querySelectorAll(".area-check:checked")).map(c => c.value);
   const m1 = Array.from(document.getElementById("monthsBase").querySelectorAll("input:checked")).map(c => c.value);
