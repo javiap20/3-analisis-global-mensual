@@ -524,7 +524,7 @@ function render(){
   const siteF = fSite.value, prodF = fProduct.value, sectF = fSector.value, comF = fComercial.value, y1 = fYear.value, y2 = fYear2.value;
 
   // Actualizar checkboxes de Familia y Área según el año seleccionado
-  const dataForYear = y1 === "Todos" ? rawData : rawData.filter(d => d.Año === y1);
+  const dataForYear = rawData;
   const refreshCheckboxes = (containerId, values, cssClass) => {
     const container = document.getElementById(containerId);
     const checked = new Set(Array.from(container.querySelectorAll("input:checked")).map(i => i.value));

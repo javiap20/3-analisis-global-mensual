@@ -541,8 +541,8 @@ function renderSectorRankings(dataBase, dataComp) {
 function render(){
   const siteF = fSite.value, prodF = fProduct.value, sectF = fSector.value, comF = fComercial.value, y1 = fYear.value, y2 = fYear2.value;
 
-  // Actualizar checkboxes de Familia y Área según el año seleccionado
-  const dataForYear = y1 === "Todos" ? rawData : rawData.filter(d => d.Año === y1);
+  // Mostrar siempre todos los valores disponibles
+  const dataForYear = rawData;
 
   const refreshCheckboxes = (containerId, values, cssClass) => {
     const container = document.getElementById(containerId);
