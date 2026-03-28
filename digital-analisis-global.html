@@ -457,6 +457,25 @@ function renderRankings(dataBase, dataComp) {
     }).join("");
 }
 
+
+function renderSectorRankings(dataBase, dataComp) {
+    const getSums = (arr) => arr.reduce((acc, d) => { acc[d.Sector] = (acc[d.Sector] || 0) + d.ingreso; return acc; }, {});
+    const sumsBase = getSums(dataBase);
+    const sumsComp = getSums(dataComp);
+
+    // Generamos el TOP 25 del Año Base
+    const topBase = Object.entries(sumsBase).sort((a,b) => b[1] - a[1]).slice(0, 25);
+
+    document.getElementById("listSectorBase").innerHTML = topBase.map(([name, val], index) => {
+        const valComp = sumsComp[name] || 0;
+        const diffPct = valComp ? Math.round(((val/valComp)-1)*100) : 0;
+        const color = diffPct < 0 ? 'var(--neg)' : 'var(--diffColor)';
+        const pctHtml = dataComp.length > 0 ? `<span class="rank-pct" style="color:${color}">${diffPct > 0 ? '+' : ''}${diffPct}%</span>` : "";
+        return `<li class="rank-item"><span class="rank-name">${index+1}. ${name}</span><div class="rank-value">${formatCurrency(val)} ${pctHtml}</div></li>`;
+    }).join("");
+}
+
+
 function render(){
   const siteF = fSite.value, prodF = fProduct.value, sectF = fSector.value, comF = fComercial.value, y1 = fYear.value, y2 = fYear2.value;
   const famF = Array.from(document.querySelectorAll(".fam-check:checked")).map(c => c.value);
@@ -464,7 +483,6 @@ function render(){
   const m1 = Array.from(document.getElementById("monthsBase").querySelectorAll("input:checked")).map(c => c.value);
   const m2 = Array.from(document.getElementById("monthsComp").querySelectorAll("input:checked")).map(c => c.value);
 
-  // Función de filtrado que incluye Familias y Áreas
   const filterFn = (y, m, fArr, aArr) => rawData.filter(d => 
     (y === "Todos" || d.Año === y) && 
     (siteF === "Todos" || d.Site === siteF.toLowerCase()) && 
@@ -485,7 +503,6 @@ function render(){
     (m.length === 0 || m.includes(d.Mes))
   );
 
-  // 1. Cálculos para los paneles de arriba (se mantienen igual)
   const gBase = filterGlobal(y1, m1);
   const gComp = filterGlobal(y2, m2);
   updatePanel("g-", gBase, gComp, y2);
@@ -499,7 +516,6 @@ function render(){
   const restComp = onlyFamilyComp.filter(d => !mixComp.includes(d));
   updatePanel("r-", restBase, restComp, y2);
 
-  // 2. TÍTULO DINÁMICO (Ahora incluye Familias y Áreas)
   const labels = [];
   if (siteF !== "Todos") labels.push(`SITE: ${siteF.toUpperCase()}`);
   if (prodF !== "Todos") labels.push(`PROD: ${prodF.toUpperCase()}`);
@@ -508,56 +524,52 @@ function render(){
   if (famF.length > 0) labels.push(`FAM: ${famF.join(", ").toUpperCase()}`);
   if (areaF.length > 0) labels.push(`AREA: ${areaF.join(", ").toUpperCase()}`);
 
+  // --- ACTUALIZACIÓN DE RANKINGS ANUNCIANTES ---
   const mainTitleEl = document.getElementById("rankingMainTitle");
-  if (labels.length > 0) {
-      mainTitleEl.textContent = "RANKING ANUNCIANTES: " + labels.join(" | ");
-  } else {
-      mainTitleEl.textContent = "RANKING ANUNCIANTES: TOTAL FACTURACIÓN";
+  if (mainTitleEl) {
+      mainTitleEl.textContent = labels.length > 0 ? "RANKING ANUNCIANTES: " + labels.join(" | ") : "RANKING ANUNCIANTES: TOTAL FACTURACIÓN";
+      mainTitleEl.style.display = "block";
   }
 
-  // 3. RANKINGS (¡Aquí está la clave!)
-  // Usamos 'mixBase' y 'mixComp' porque ya llevan aplicados TODOS los filtros (incluyendo Familia y Área)
-  rankTitleBase.textContent = `TOP 25 FACT. AÑO BASE (${y1})`;
-  rankTitleComp.textContent = `OTRAS FUGAS/BAJADAS EN (${y2 === "Sin comparar" ? "-" : y2})`;
+  const rtBase = document.getElementById("rankTitleBase");
+  const rtComp = document.getElementById("rankTitleComp");
+  if (rtBase) rtBase.textContent = `TOP 25 FACT. AÑO BASE (${y1})`;
+  if (rtComp) rtComp.textContent = `OTRAS FUGAS/BAJADAS EN (${y2 === "Sin comparar" ? "-" : y2})`;
   
   renderRankings(mixBase, mixComp);
 
-// Mostrar bloques y actualizar títulos personalizados
-  mainTitleEl.style.display = "block";
-  brandRankings.style.setProperty('display', 'flex', 'important');
+  const bRankings = document.getElementById("brandRankings");
+  if (bRankings) bRankings.style.setProperty('display', 'flex', 'important');
 
+  // --- TÍTULOS DE PANELES ---
   const famText = famF.length > 0 ? famF.join(", ") : "Todas";
   const areaText = areaF.length > 0 ? areaF.join(", ") : "Todas";
 
-  // Título 1: Familias (Muestra la lista al lado de la palabra Familias)
-  famTitleDisplay.innerHTML = `Total Ingresos Familias <span style="font-size: 0.75em; opacity: 0.8; text-transform: none; font-weight: normal;">(${famText})</span>`;
-
-  // Título 2: Mix (Separa las familias después de "Familia" y las áreas después de "Área")
-  mixTitleDisplay.innerHTML = `Ingresos Familia <span style="font-size: 0.7em; opacity: 0.8; text-transform: none; font-weight: normal;">(${famText})</span> + Área <span style="font-size: 0.7em; opacity: 0.8; text-transform: none; font-weight: normal;">(${areaText})</span>`;
-
-  // Título 3: Ingresos Restantes (Solo muestra el área restada)
-  if (areaF.length > 0) {
-      restTitleDisplay.innerHTML = `Ingresos totales menos <span style="font-size: 0.75em; opacity: 0.8; text-transform: none; font-weight: normal;">(${areaText})</span>`;
-  } else {
-      // Si no hay áreas seleccionadas, volvemos al título genérico
-      restTitleDisplay.textContent = "Ingresos Restantes";
+  if (typeof famTitleDisplay !== 'undefined') famTitleDisplay.innerHTML = `Total Ingresos Familias <span style="font-size: 0.75em; opacity: 0.8;">(${famText})</span>`;
+  if (typeof mixTitleDisplay !== 'undefined') mixTitleDisplay.innerHTML = `Ingresos Familia <span style="font-size: 0.7em; opacity: 0.8;">(${famText})</span> + Área <span style="font-size: 0.7em; opacity: 0.8;">(${areaText})</span>`;
+  
+  const rTD = document.getElementById("restTitleDisplay");
+  if (rTD) {
+      rTD.innerHTML = areaF.length > 0 ? `Ingresos totales menos <span style="font-size: 0.75em; opacity: 0.8;">(${areaText})</span>` : "Ingresos Restantes";
   }
 
-// --- ACTUALIZACIÓN DE SECTORES ---
-  const sectorMainTitle = document.getElementById("sectorMainTitle");
-  if (labels.length > 0) {
-      sectorMainTitle.textContent = "RANKING SECTORES: " + labels.join(" | ");
-  } else {
-      sectorMainTitle.textContent = "RANKING SECTORES: TOTAL FACTURACIÓN";
+  // --- BLOQUE DE SECTORES (LO QUE BUSCAMOS) ---
+  const sMainTitle = document.getElementById("sectorMainTitle");
+  if (sMainTitle) {
+      sMainTitle.textContent = labels.length > 0 ? "RANKING SECTORES: " + labels.join(" | ") : "RANKING SECTORES: TOTAL FACTURACIÓN";
+      sMainTitle.style.display = "block";
   }
 
-  document.getElementById("sectorTitleBase").textContent = `TOP 25 SECTORES BASE (${y1})`;
+  const sTitleBase = document.getElementById("sectorTitleBase");
+  if (sTitleBase) sTitleBase.textContent = `TOP 25 SECTORES BASE (${y1})`;
 
-  renderSectorRankings(mixBase, mixComp); // Usamos mixBase para que respete filtros de Familias/Áreas
+  // Llamada a la función (asegurándonos de que existe)
+  if (typeof renderSectorRankings === "function") {
+      renderSectorRankings(mixBase, mixComp);
+  }
 
-  sectorMainTitle.style.display = "block";
-  document.getElementById("sectorRankings").style.display = "block";
-
+  const sRankings = document.getElementById("sectorRankings");
+  if (sRankings) sRankings.style.display = "block";
 }
 </script>
 </body>
