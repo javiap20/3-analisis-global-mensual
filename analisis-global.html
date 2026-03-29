@@ -240,7 +240,7 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
 
   <div id="siteBlock" class="card filters" style="display:none">
     <div class="filtersRow">
-      <div><label>Site</label><select id="fSite"></select></div>
+      <div><label>Site / Revista</label><select id="fSite"></select></div>
       <div><label>Producto</label><select id="fProduct"></select></div>
       <div><label>Sector</label><select id="fSector"></select></div>
       <div><label>Comercial</label><select id="fComercial"></select></div>
@@ -354,7 +354,7 @@ function selectType(type) {
 
     // Label del filtro Site
     const siteLabel = document.querySelector('#siteBlock label');
-    if (siteLabel) siteLabel.textContent = type === 'PRINT' ? 'Revista' : 'Site';
+    if (siteLabel) siteLabel.textContent = 'Site / Revista';
 
     // Botones activos
     ['DIGITAL','PRINT','EVENTOS'].forEach(t => {

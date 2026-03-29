@@ -267,7 +267,7 @@ h1 { text-align:center; font-size:1.5rem; margin:20px 0; }
   <div id="topFilters2" class="card filters" style="display:none">
     <div class="filtersRow">
       <div>
-        <label id="siteLabel2">Site a Analizar...</label>
+        <label id="siteLabel2">Site / Revista</label>
         <select id="fSite2"></select>
       </div>
       <div>
@@ -447,10 +447,7 @@ function selectType2(type){
     type==='EVENTOS' ? `${type} — Análisis por Anunciante (Marca Hearst)` :
                        `${type} — Análisis por Anunciante`;
 
-  document.getElementById('siteLabel2').textContent =
-    type==='PRINT'   ? 'Revista a Analizar...' :
-    type==='EVENTOS' ? 'Marca Hearst a Analizar...' :
-                       'Site a Analizar...';
+  document.getElementById('siteLabel2').textContent = 'Site / Revista';
 
   ['DIGITAL','PRINT','EVENTOS'].forEach(t=>{
     const btn = document.getElementById('btn2'+t.charAt(0)+t.slice(1).toLowerCase());
