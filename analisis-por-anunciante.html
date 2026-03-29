@@ -442,10 +442,7 @@ function selectType2(type){
   if(currentType2===type) return;
   currentType2 = type;
 
-  document.getElementById('mainPageTitle2').textContent =
-    type==='PRINT'   ? `${type} — Análisis por Anunciante (Revista)` :
-    type==='EVENTOS' ? `${type} — Análisis por Anunciante (Marca Hearst)` :
-                       `${type} — Análisis por Anunciante`;
+  document.getElementById('mainPageTitle2').textContent = `${type} — Análisis por Anunciante`;
 
   document.getElementById('siteLabel2').textContent = 'Site / Revista';
 

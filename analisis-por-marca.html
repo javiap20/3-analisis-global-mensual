@@ -459,7 +459,9 @@ function selectType(type) {
 
     // Título
     document.getElementById('mainPageTitle').textContent =
-        type === 'PRINT' ? `${type} - Análisis por REVISTA` : `${type} - Análisis por SITE`;
+    type === 'PRINT'   ? `${type} - Análisis por REVISTA` :
+    type === 'EVENTOS' ? `${type} - Análisis por Marca Hearst` :
+                         `${type} - Análisis por SITE`;
 
     // Label del filtro Site
     const siteLabel = document.querySelector('#siteOnlyBlock label');
