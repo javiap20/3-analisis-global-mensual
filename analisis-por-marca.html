@@ -314,6 +314,15 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
       <div class="summaryHeader" style="background:var(--base); color:#111;">Año comparación: <span id="summaryYearComp">—</span></div>
       
       <div class="summarySection">
+        <div class="summaryTitle site" style="color:var(--title-site)">Site / Revista</div>
+        <ul id="advSitesBase" class="itemList site"></ul>
+      </div>
+      <div class="summarySection">
+        <div class="summaryTitle site" style="color:var(--title-site)">Site / Revista</div>
+        <ul id="advSitesComp" class="itemList site"></ul>
+      </div>
+
+      <div class="summarySection">
         <div class="summaryTitle mes">Mes</div>
         <ul id="advMonthsBase" class="itemList mes"></ul>
       </div>
@@ -382,15 +391,11 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
 
 
 
-<div class="summarySection">
-        <div class="summaryTitle marca">Marca (desglosada por familia Sponsorship, Social y Curated)</div>
-        <ul id="advBrandsBase" class="itemList marca"></ul>
-        <button id="brandsToggleBtn" class="toggleBtn" style="display:none">Ver más marcas</button>
-      </div>
-      <div class="summarySection">
-        <div class="summaryTitle marca">Marca (desglosada por familia Sponsorship, Social y Curated)</div>
-        <ul id="advBrandsComp" class="itemList marca"></ul>
-      </div>
+<div class="summarySection" style="grid-column: 1 / span 2;">
+  <div class="summaryTitle marca">Marca (desglosada por familia Sponsorship, Social y Curated)</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:0 18px;" id="advBrandsMirror"></div>
+  <button id="brandsToggleBtn" class="toggleBtn" style="display:none">Ver más marcas</button>
+</div>
 
 
 
@@ -636,11 +641,11 @@ function calcNetting(data) {
   return { total: totalFact, lines, avg: lines ? totalFact / lines : 0 };
 }
 
-function groupSumGeneric(data, keyField) {
+function groupSumGeneric(data, keyField, ignoreFamilyFilter = false) {
   const map = new Map();
   
-  // Para DIGITAL filtramos solo Sponsorship/Social/Curated; para PRINT y EVENTOS mostramos todo
-  const FAMILIAS_PERMITIDAS = currentType === 'DIGITAL'
+  // Para DIGITAL filtramos solo Sponsorship/Social/Curated SOLO en el bloque de Marcas
+  const FAMILIAS_PERMITIDAS = (!ignoreFamilyFilter && currentType === 'DIGITAL')
     ? ["Sponsorship", "Social Networks", "Curated"]
     : null; // null = sin filtro
 
@@ -724,78 +729,84 @@ function fillMirrorLists(idBase, idComp, itemsBase, itemsComp, isMonth = false) 
 
 let currentBrandsLimit = 25;
 function fillBrandsMirrorWithLimit(idBase, idComp, itemsBase, itemsComp) {
-  const ulBase = document.getElementById(idBase);
-  const ulComp = document.getElementById(idComp);
+  const container = document.getElementById('advBrandsMirror');
   const btn = document.getElementById('brandsToggleBtn');
-  ulBase.innerHTML = ""; ulComp.innerHTML = "";
-  
-  const baseLabels = itemsBase.map(i => i.label);
-  baseLabels.forEach((label, idx) => {
-    const dataBase = itemsBase.find(i => i.label === label);
-    const dataComp = itemsComp.find(i => i.label === label);
-    
-    const liB = document.createElement('li');
-    let contentB = `<strong>${dataBase.label}</strong> — <span class="amount">${formatCurrency(dataBase.sum)}</span>`;
-    
-    if (dataComp && dataComp.sum > 0) {
-      const pct = Math.round(((dataBase.sum / dataComp.sum) - 1) * 100);
-      contentB += ` — <span class="pct ${pct < 0 ? 'neg' : 'pos'}">${pct > 0 ? '+' : ''}${pct}%</span>`;
+  container.innerHTML = "";
+
+  const baseLabels     = itemsBase.map(i => i.label);
+  const compOnlyLabels = itemsComp.map(i => i.label).filter(l => !baseLabels.includes(l));
+  const allLabels      = [...baseLabels, ...compOnlyLabels];
+
+  function buildBrandContent(data, dataOther, showPct) {
+    if (!data) return '<div style="opacity:0.3; padding:12px 0; border-bottom:1px solid rgba(75,85,99,0.2);">—</div>';
+
+    let content = `<div style="padding:12px 0; border-bottom:1px solid rgba(75,85,99,0.2);">`;
+    content += `<strong>${data.label}</strong> — <span class="amount">${formatCurrency(data.sum)}</span>`;
+
+    if (showPct && dataOther && dataOther.sum > 0) {
+      const pct = Math.round(((data.sum / dataOther.sum) - 1) * 100);
+      content += ` — <span class="pct ${pct < 0 ? 'neg' : 'pos'}">${pct > 0 ? '+' : ''}${pct}%</span>`;
     }
 
-    if (dataBase.breakdown) {
-      dataBase.breakdown.forEach(sub => {
-        let isBelow = false;
-        const pNameLower = sub.productName.toLowerCase();
+    if (data.breakdown) {
+      data.breakdown.forEach(sub => {
         const famColor = FAMILIA_COLORS[sub.familia] || "#94a3b8";
-
-        // Reglas de alerta usando el site limpio
+        const pNameLower = sub.productName.toLowerCase();
+        let isBelow = false;
         if (pNameLower === "branded content video") {
           isBelow = REF_VIDEO[sub.siteId] && sub.avg < REF_VIDEO[sub.siteId];
         } else if (["branded content", "branded content syndicated", "curated"].includes(pNameLower)) {
           isBelow = REF_STANDARD[sub.siteId] && sub.avg < REF_STANDARD[sub.siteId];
         }
-
-        // Estilo si el presupuesto es bajo
-        const alertStyle = isBelow ? 'background: rgba(248,113,113,0.2); font-weight: bold; border: 1px solid #f87171;' : '';
-        const alertIcon = isBelow ? '⚠️ ' : '';
-        const textoActiv = sub.count === 1 ? "activ." : "activ."; // Usamos siempre activ. como pediste
-        
-        contentB += `
-          <div class="sub-item" style="margin-left: 18px; font-size: 0.82em; margin-top: 4px; border-left: 3px solid ${famColor}; padding-left: 8px; line-height: 1.4;">
-            <div style="color: ${famColor}; ${alertStyle} padding: 2px 5px; border-radius: 3px; display: inline-block;">
-              <span style="font-weight: bold; text-transform: uppercase; font-size: 0.9em;">${sub.familia}:</span> 
-              ${alertIcon}${sub.text} (${sub.count} ${textoActiv}) — ${formatCurrency(sub.avg)} 
-              <small style="opacity: 0.8; font-style: italic;">(presu medio)</small>
+        const alertStyle = isBelow ? 'background:rgba(248,113,113,0.2);font-weight:bold;border:1px solid #f87171;' : '';
+        const alertIcon  = isBelow ? '⚠️ ' : '';
+        content += `
+          <div style="margin-left:18px;font-size:0.82em;margin-top:4px;border-left:3px solid ${famColor};padding-left:8px;line-height:1.4;">
+            <div style="color:${famColor};${alertStyle}padding:2px 5px;border-radius:3px;display:inline-block;">
+              <span style="font-weight:bold;text-transform:uppercase;font-size:0.9em;">${sub.familia}:</span>
+              ${alertIcon}${sub.text} (${sub.count} activ.) — ${formatCurrency(sub.avg)}
+              <small style="opacity:0.8;font-style:italic;">(presu medio)</small>
             </div>
           </div>`;
       });
     }
 
-    liB.innerHTML = contentB;
+    content += `</div>`;
+    return content;
+  }
 
-    // Renderizado columna comparativa (derecha)
-    const liC = document.createElement('li');
-    if (dataComp) {
-        liC.innerHTML = `<strong>${dataComp.label}</strong> — <span class="amount">${formatCurrency(dataComp.sum)}</span>`;
-    } else { 
-        liC.className = "empty-item"; 
-        liC.innerHTML = `${label} — 0€`; 
+  allLabels.forEach((label, idx) => {
+    const dataBase = itemsBase.find(i => i.label === label) || null;
+    const dataComp = itemsComp.find(i => i.label === label) || null;
+
+    const row = document.createElement('div');
+    row.style.cssText = 'display:contents;';
+    row.setAttribute('data-brand-idx', idx);
+
+    const cellBase = document.createElement('div');
+    cellBase.innerHTML = buildBrandContent(dataBase, dataComp, true);
+
+    const cellComp = document.createElement('div');
+    cellComp.innerHTML = buildBrandContent(dataComp, dataBase, false);
+
+    if (idx >= currentBrandsLimit) {
+      cellBase.style.display = 'none';
+      cellComp.style.display = 'none';
     }
 
-    if (idx >= currentBrandsLimit) { liB.style.display = 'none'; liC.style.display = 'none'; }
-    ulBase.appendChild(liB); 
-    ulComp.appendChild(liC);
+    container.appendChild(cellBase);
+    container.appendChild(cellComp);
   });
 
-  if (baseLabels.length > currentBrandsLimit) {
+  if (allLabels.length > currentBrandsLimit) {
     btn.style.display = 'block';
-    btn.textContent = `Ver 25 más (${baseLabels.length - currentBrandsLimit} restantes)`;
-    btn.onclick = () => { 
-      currentBrandsLimit += 25; 
-      fillBrandsMirrorWithLimit(idBase, idComp, itemsBase, itemsComp); 
+    btn.textContent = `Ver 25 más (${allLabels.length - currentBrandsLimit} restantes)`;
+    btn.onclick = () => {
+      currentBrandsLimit += 25;
+      fillBrandsMirrorWithLimit(idBase, idComp, itemsBase, itemsComp);
     };
-  } else { 
-    btn.style.display = 'none'; 
+  } else {
+    btn.style.display = 'none';
   }
 }
 
@@ -1017,18 +1028,20 @@ function render(){
 
   const bBrands = groupSumGeneric(d1, 'Marca'), cBrands = groupSumGeneric(d2, 'Marca');
   const bMonths = groupSumMonths(d1), cMonths = groupSumMonths(d2);
-  const bFamilies = groupSumGeneric(d1, 'Familia'), cFamilies = groupSumGeneric(d2, 'Familia');
-  const bProds = groupSumGeneric(d1, 'Product'), cProds = groupSumGeneric(d2, 'Product');
-  const bSectors = groupSumGeneric(d1, 'Sector'), cSectors = groupSumGeneric(d2, 'Sector');
+  const bFamilies = groupSumGeneric(d1, 'Familia', true), cFamilies = groupSumGeneric(d2, 'Familia', true);
+  const bProds = groupSumGeneric(d1, 'Product', true), cProds = groupSumGeneric(d2, 'Product', true);
+  const bSectors = groupSumGeneric(d1, 'Sector', true), cSectors = groupSumGeneric(d2, 'Sector', true);
+  const bSites = groupSumGeneric(d1, 'Site', true), cSites = groupSumGeneric(d2, 'Site', true);
 
   fillBrandsMirrorWithLimit('advBrandsBase', 'advBrandsComp', bBrands, cBrands);
+  fillSitesMirror('advSitesBase', 'advSitesComp', bSites, cSites);
   fillMirrorLists('advMonthsBase', 'advMonthsComp', bMonths, cMonths, true);
   fillMirrorLists('advFamiliesBase', 'advFamiliesComp', bFamilies, cFamilies);
   fillMirrorLists('advProductsBase', 'advProductsComp', bProds, cProds);
   fillSectorsMirror('advSectorsBase', 'advSectorsComp', bSectors, cSectors);
   
   if(isUnlocked) {
-    const bSales = groupSumGeneric(d1, 'Comercial'), cSales = groupSumGeneric(d2, 'Comercial');
+    const bSales = groupSumGeneric(d1, 'Comercial', true), cSales = groupSumGeneric(d2, 'Comercial', true);
     fillMirrorLists('advSalesBase', 'advSalesComp', bSales, cSales);
   }
 
@@ -1054,6 +1067,45 @@ function render(){
   drawF('chartProg', ["Programatica Display Directo", "Programatica Display Indirecto", "Video Programatico Indirecto", "Video Programatico Directo"]);
 
   calculateProjection();
+}
+
+function fillSitesMirror(idBase, idComp, itemsBase, itemsComp) {
+  const ulBase = document.getElementById(idBase);
+  const ulComp = document.getElementById(idComp);
+  ulBase.innerHTML = ""; ulComp.innerHTML = "";
+
+  const allLabels = [...new Set([...itemsBase.map(i => i.label), ...itemsComp.map(i => i.label)])];
+
+  allLabels.sort((a, b) => {
+    const base1 = itemsBase.find(i => i.label === a)?.sum || 0;
+    const comp1 = itemsComp.find(i => i.label === a)?.sum || 0;
+    const base2 = itemsBase.find(i => i.label === b)?.sum || 0;
+    const comp2 = itemsComp.find(i => i.label === b)?.sum || 0;
+    const pctA = comp1 > 0 ? (base1 / comp1) - 1 : (base1 > 0 ? Infinity : 0);
+    const pctB = comp2 > 0 ? (base2 / comp2) - 1 : (base2 > 0 ? Infinity : 0);
+    return pctB - pctA;
+  });
+
+  allLabels.forEach(label => {
+    const dataBase = itemsBase.find(i => i.label === label);
+    const dataComp = itemsComp.find(i => i.label === label);
+
+    const liB = document.createElement('li');
+    if (dataBase) {
+      let content = `${dataBase.label} — <span class="amount">${formatCurrency(dataBase.sum)}</span>`;
+      if (dataComp && dataComp.sum > 0) {
+        const pct = Math.round(((dataBase.sum / dataComp.sum) - 1) * 100);
+        content += ` — <span class="pct ${pct < 0 ? 'neg' : 'pos'}">${pct > 0 ? '+' : ''}${pct}%</span>`;
+      }
+      liB.innerHTML = content;
+    } else { liB.className = "empty-item"; liB.innerHTML = `${label} — 0€`; }
+    ulBase.appendChild(liB);
+
+    const liC = document.createElement('li');
+    if (dataComp) liC.innerHTML = `${dataComp.label} — <span class="amount">${formatCurrency(dataComp.sum)}</span>`;
+    else { liC.className = "empty-item"; liC.innerHTML = `${label} — 0€`; }
+    ulComp.appendChild(liC);
+  });
 }
 
 function fillSectorsMirror(idBase, idComp, itemsBase, itemsComp) {
