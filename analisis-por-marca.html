@@ -266,6 +266,11 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
     <div id="fFamiliaGroup" class="checkboxGroup" style="max-height:70px; overflow-y:auto;"></div>
   </div>
 
+  <div id="areaFilterBlock" class="card filters" style="display:none">
+    <label style="font-weight:700; font-size:0.85em; display:block; margin-bottom:6px; color:#f97316;">Área</label>
+    <div id="fAreaGroup" class="checkboxGroup" style="max-height:70px; overflow-y:auto;"></div>
+  </div>
+
   <div id="mainFiltersBlock" class="card filters" style="display:none">
     <div class="filtersRow">
       <div><label>Producto</label><select id="fProduct"></select></div>
@@ -459,11 +464,13 @@ function selectType(type) {
 
     // Título
     document.getElementById('mainPageTitle').textContent =
-        type === 'PRINT' ? `${type} - Análisis por REVISTA` : `${type} - Análisis por SITE`;
+        type === 'PRINT' ? `${type} - Análisis por REVISTA`
+        : type === 'EVENTOS' ? `${type} - Análisis por MARCA HEARST`
+        : `${type} - Análisis por SITE`;
 
     // Label del filtro Site
     const siteLabel = document.querySelector('#siteOnlyBlock label');
-    if (siteLabel) siteLabel.textContent = type === 'PRINT' ? 'Revista a Analizar...' : 'Site a Analizar...';
+    if (siteLabel) siteLabel.textContent = type === 'PRINT' ? 'Revista a Analizar...' : type === 'EVENTOS' ? 'Marca Hearst a Analizar...' : 'Site a Analizar...';
 
     // Botones activos
     ['DIGITAL','PRINT','EVENTOS'].forEach(t => {
@@ -538,6 +545,24 @@ function limpiarSite(url) {
   return url.replace(/^(www\.)?/, '').split('.')[0];
 }
 
+function onFamiliaChange() {
+  const selectedFamilias = Array.from(document.getElementById("fFamiliaGroup").querySelectorAll("input:checked")).map(c=>c.value);
+  const currentProd = fProduct.value;
+
+  // Filtrar productos según familias seleccionadas (o todos si no hay selección)
+  const productsFiltered = selectedFamilias.length === 0
+    ? rawData.map(d => d.Product)
+    : rawData.filter(d => selectedFamilias.includes(d.Familia)).map(d => d.Product);
+
+  const uniqueProds = [...new Set(productsFiltered.filter(Boolean))].sort();
+  fProduct.innerHTML = "<option>Todos</option>" + uniqueProds.map(v=>`<option>${v}</option>`).join("");
+
+  // Restaurar selección si sigue disponible
+  if ([...fProduct.options].some(o => o.value === currentProd)) fProduct.value = currentProd;
+
+  render();
+}
+
 function checkPass() {
     if(document.getElementById('passInput').value === "mascara") {
         isUnlocked = true;
@@ -608,11 +633,16 @@ function init(data){
 
   const familias = [...new Set(rawData.map(d=>d.Familia).filter(Boolean))].sort();
   document.getElementById("fFamiliaGroup").innerHTML = familias.map(f =>
-    `<label><input type="checkbox" value="${f}" onchange="render()"> ${f}</label>`
+    `<label><input type="checkbox" value="${f}" onchange="onFamiliaChange()"> ${f}</label>`
+  ).join("");
+
+  const areas = [...new Set(rawData.map(d=>d.Area).filter(Boolean))].sort();
+  document.getElementById("fAreaGroup").innerHTML = areas.map(a =>
+    `<label><input type="checkbox" value="${a}" onchange="render()"> ${a}</label>`
   ).join("");
 
   [fAnunciante,fSite,fProduct,fSector,fYear,fYear2,fArea].forEach(el=>{ if(el) el.onchange=render; });
-  ["mainFiltersBlock","siteOnlyBlock","familiaFilterBlock","filters","totalBlock","advSummaryCard","estimateBlock"].forEach(id=>document.getElementById(id).style.display="block");
+  ["mainFiltersBlock","siteOnlyBlock","familiaFilterBlock","areaFilterBlock","filters","totalBlock","advSummaryCard","estimateBlock"].forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display="block"; });
   document.getElementById("statsBlock").style.display="flex";
   render();
 }
@@ -971,6 +1001,7 @@ function render(){
   const m1 = Array.from(document.getElementById("monthsBase").querySelectorAll("input:checked")).map(c=>c.value);
   const m2 = Array.from(document.getElementById("monthsComp").querySelectorAll("input:checked")).map(c=>c.value);
   const selectedFamilias = Array.from(document.getElementById("fFamiliaGroup").querySelectorAll("input:checked")).map(c=>c.value);
+  const selectedAreas = Array.from(document.getElementById("fAreaGroup").querySelectorAll("input:checked")).map(c=>c.value);
 
   document.getElementById('legBase').textContent = y1;
   if(y2 !== "Sin comparar") {
@@ -986,6 +1017,7 @@ function render(){
     (sec==="todos" || d.Sector.toLowerCase()===sec) &&
     (area==="todos" || d.Area.toLowerCase()===area) &&
     (selectedFamilias.length === 0 || selectedFamilias.includes(d.Familia)) &&
+    (selectedAreas.length === 0 || selectedAreas.includes(d.Area)) &&
     (months.length === 0 || months.includes(d.Mes))
   );
 
