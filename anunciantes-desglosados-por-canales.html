@@ -1,0 +1,500 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Ranking Anunciantes - Facturación</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --card: #111827; --text: #e5e7eb; --neg: #f87171; --ok-green: #34d399;
+  --brand-cian: #22d3ee; --total-bg: #fefce8; --total-text: #422006; 
+  --colHighlight: rgba(255, 255, 255, 0.08); 
+  --bg-year-base: #1e293b;
+  --bg-year-comp: #1e293b;
+  --bg-brand: #334155;
+}
+body { margin: 0; font-family: 'Inter', sans-serif; background: #020617; color: var(--text); font-size: 13px; }
+.container { max-width: 1600px; margin: auto; padding: 20px; }
+.card { background: rgba(17,24,39,.9); border-radius: 14px; padding: 15px; margin-bottom: 20px; border: 1px solid #1f2937; }
+
+.filtersRow { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
+.filter-group { 
+    flex: 1; min-width: 300px; padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.f-base { background-color: var(--bg-year-base); }
+.f-comp { background-color: var(--bg-year-comp); }
+.f-brand { background-color: var(--bg-brand); }
+
+label { display: block; margin-bottom: 8px; color: #94a3b8; font-size: 11px; text-transform: uppercase; font-weight: bold; }
+select { 
+    background: #0f172a; color: #fff; border: 1px solid #4b5563; padding: 8px; border-radius: 8px; 
+    width: 100%; margin-bottom: 12px; font-size: 12px; cursor: pointer;
+}
+
+.month-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.area-grid  { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.f-areas { background-color: #1a2535; width: 100%; padding: 16px 20px; box-sizing: border-box; }
+
+.chip {
+    padding: 6px 2px; border-radius: 6px; background: rgba(0,0,0,0.4); border: 1px solid #374151;
+    color: #64748b; font-size: 10px; cursor: pointer; text-align: center; transition: 0.2s; text-transform: uppercase;
+}
+.chip.active { background: var(--brand-cian); color: #000; font-weight: bold; border-color: var(--brand-cian); }
+.chip-area { font-size: 9px; padding: 5px 4px; }
+
+.totalBlock { 
+    background: var(--total-bg); color: var(--total-text); padding: 20px; border-radius: 12px; 
+    margin-bottom: 20px; border: 1px solid #fef08a;
+}
+.totalValues { display: flex; justify-content: space-around; align-items: center; text-align: center; }
+.totalValues .value { font-size: 26px; font-weight: 900; display: block; margin-top: 5px; }
+.totalLabels { font-weight: 700; text-transform: uppercase; font-size: 11px; opacity: 0.7; }
+
+.grid-layout { display: grid; grid-template-columns: 350px 200px repeat(4, 1fr); align-items: stretch; }
+.header-row { 
+    background: #1e293b; font-weight: bold; color: #fff; text-transform: uppercase; 
+    font-size: 11px; text-align: center; border-radius: 10px 10px 0 0; border: 1px solid #334155; margin-bottom: 4px;
+}
+.header-row div { padding: 15px; display: flex; align-items: center; justify-content: center; }
+
+/* ── Anunciante row ── */
+.adv-row { border-bottom: 1px solid rgba(255,255,255,0.05); }
+.adv-row:last-child { border-bottom: none; }
+
+.adv-name { 
+    font-weight: 700; color: var(--brand-cian); padding: 0 12px; display: flex; 
+    align-items: center; gap: 8px; background: rgba(0,0,0,0.2); cursor: pointer;
+    user-select: none;
+}
+.adv-name .toggle-icon { 
+    font-size: 10px; color: #64748b; transition: transform 0.2s; flex-shrink: 0;
+    width: 14px; text-align: center;
+}
+.adv-name .toggle-icon.open { transform: rotate(90deg); color: var(--brand-cian); }
+
+.data-cell { text-align: center; padding: 12px 10px; display: flex; flex-direction: column; justify-content: center; border-left: 1px solid rgba(255,255,255,0.03); }
+.col-main { background-color: var(--colHighlight); border-left: 1px solid rgba(255,255,255,0.1) !important; border-right: 1px solid rgba(255,255,255,0.1) !important; }
+
+.v-val-main { font-size: 14px; font-weight: 800; color: #fff; }
+.v-val { font-weight: 700; font-size: 12px; }
+.trend-line { font-size: 11px; font-weight: 600; display: flex; justify-content: center; gap: 5px; margin-top: 4px; }
+.pos { color: var(--ok-green); }
+.neg { color: var(--neg); }
+
+/* ── Marcas desplegables ── */
+.brands-container { display: none; background: #e8f4f8; border-top: 1px solid #b0d4e3; }
+.brands-container.open { display: block; }
+
+.brand-row { 
+    display: grid; grid-template-columns: 350px 200px repeat(4, 1fr); 
+    align-items: stretch; border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.brand-row:last-child { border-bottom: none; }
+.brand-name { 
+    padding: 8px 12px 8px 36px; font-size: 11px; color: #2d5a72; font-style: italic;
+    display: flex; align-items: center; background: rgba(0,0,0,0.04); font-weight: 600;
+}
+.brand-data-cell { 
+    text-align: center; padding: 8px 10px; display: flex; flex-direction: column; 
+    justify-content: center; border-left: 1px solid rgba(0,0,0,0.06); font-size: 11px;
+}
+.brand-data-cell .v-val { font-size: 11px; color: #1e3a4a; font-weight: 700; }
+.brand-data-cell.col-main { background-color: rgba(34,211,238,0.12); border-left: 1px solid rgba(34,211,238,0.25) !important; border-right: 1px solid rgba(34,211,238,0.25) !important; }
+.brand-data-cell .trend-line { font-size: 10px; }
+
+h1, .subtitle { text-align: center; }
+
+/* ── Productos desplegables (3er nivel) ── */
+.brand-block { border-bottom: 1px solid rgba(0,0,0,0.06); }
+.brand-block:last-child { border-bottom: none; }
+.brand-row { border-bottom: none !important; }
+
+.prods-container { display: none; background: #d4eef7; border-top: 1px solid #a0c8dc; }
+.prods-container.open { display: block; }
+
+.prod-row {
+    display: grid; grid-template-columns: 350px 200px repeat(4, 1fr);
+    align-items: stretch; border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.prod-row:last-child { border-bottom: none; }
+.prod-name {
+    padding: 6px 12px 6px 56px; font-size: 10px; color: #1a4a62;
+    display: flex; align-items: center; background: rgba(0,0,0,0.04);
+}
+.prod-data-cell {
+    text-align: center; padding: 6px 10px; display: flex; flex-direction: column;
+    justify-content: center; border-left: 1px solid rgba(0,0,0,0.05); font-size: 10px;
+}
+.col-main-prod { background-color: rgba(34,211,238,0.08); border-left: 1px solid rgba(34,211,238,0.2) !important; border-right: 1px solid rgba(34,211,238,0.2) !important; }
+.v-val-prod { font-size: 10px; color: #1e3a4a; font-weight: 700; }
+.prod-data-cell .trend-line { font-size: 9px; }
+</style>
+</head>
+<body>
+
+<h1>Ranking de Anunciantes - TOTAL HEARST</h1>
+<p class="subtitle">
+  Desglose (de mayor a menor facturación) de los anunciantes que han tenido activaciones en los años seleccionados <br>
+  <em>(la facturación programática de esos anunciantes está incluida en Google. No hay desglose en el apartado programática)</em>
+</p>
+
+<div class="container">
+    <div class="card">
+        <label>Cargar Archivo Excel</label>
+        <input type="file" id="fileInput" accept=".xlsx">
+    </div>
+
+    <div id="mainUI" style="display:none">
+        <div class="filtersRow">
+            <div class="filter-group f-base">
+                <label>Año Base</label>
+                <select id="fYear1"></select>
+                <div id="months1" class="month-grid"></div>
+            </div>
+            <div class="filter-group f-comp">
+                <label>Año Comparar</label>
+                <select id="fYear2"></select>
+                <div id="months2" class="month-grid"></div>
+            </div>
+            <div class="filter-group f-brand">
+                <label>Marca Unificada</label>
+                <select id="fPub" style="margin-top: 5px;"></select>
+                <label style="margin-top: 10px;">Sector</label>
+                <select id="fSector"></select>
+            </div>
+        </div>
+        <div class="filter-group f-areas">
+            <label>Áreas <span style="color:#64748b; font-size:10px; font-weight:400;">(puedes elegir varias)</span></label>
+            <div id="areasGrid" class="area-grid"></div>
+        </div>
+
+        <div id="resultsContent" style="display:none">
+            <div class="totalBlock">
+                <div class="totalValues">
+                    <div>
+                        <span class="totalLabels">Total</span> <span id="y1Lab"></span>
+                        <span id="totalV1" class="value">0€</span>
+                    </div>
+                    <div id="totalVar" style="text-align:center;"></div>
+                    <div>
+                        <span class="totalLabels">Total</span> <span id="y2Lab"></span>
+                        <span id="totalV2" class="value">0€</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-row grid-layout">
+                <div>Anunciantes (por orden de fact.)</div>
+                <div class="col-main">Facturación Total</div>
+                <div>Eventos</div>
+                <div>Print</div>
+                <div>Digital</div>
+                <div>Prog.</div>
+            </div>
+            <div id="renderContainer" class="card" style="padding:0; border-top:none; border-radius: 0 0 14px 14px;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let rawData = [];
+const MESES = ["ENERO","FEBRERO","MARZO","ABRIL","MAYO","JUNIO","JULIO","AGOSTO","SEPTIEMBRE","OCTUBRE","NOVIEMBRE","DICIEMBRE"];
+let selM1 = new Set(), selM2 = new Set();
+let selAreas = new Set(); // multi-selección de áreas
+
+const PUB_MAP = {
+    "CAR & DRIVER": "Car & Driver", "WWW.CARANDDRIVER.COM/ES/": "Car & Driver",
+    "COSMOPOLITAN": "Cosmopolitan", "WWW.COSMOPOLITAN.COM/ES/": "Cosmopolitan",
+    "DIEZ MINUTOS": "Diez Minutos", "WWW.DIEZMINUTOS.ES": "Diez Minutos",
+    "ELLE": "Elle", "WWW.ELLE.COM/ES/": "Elle",
+    "ELLE DECORATION": "Elle Decoration", "WWW.ELLEDECOR.COM/ES/": "Elle Decoration",
+    "ELLE GOURMET": "Elle Gourmet",
+    "ESQUIRE": "Esquire", "WWW.ESQUIRE.COM/ES/": "Esquire",
+    "FOTOGRAMAS & VIDEO": "Fotogramas", "WWW.FOTOGRAMAS.ES": "Fotogramas",
+    "HARPER´S BAZAAR": "Harper's Bazaar", "WWW.HARPERSBAZAAR.COM/ES": "Harper's Bazaar",
+    "MEN´S HEALTH": "Men's Health", "WWW.MENSHEALTH.COM/ES": "Men's Health",
+    "NUEVO ESTILO": "Nuevo Estilo", "WWW.NUEVO-ESTILO.ES": "Nuevo Estilo",
+    "RUNNER´S WORLD": "Runner's World", "WWW.RUNNERSWORLD.COM/ES/": "Runner's World",
+    "WOMEN´S HEALTH": "Women's Health", "WWW.WOMENSHEALTHMAG.COM/ES/": "Women's Health",
+    "WWW.MICASAREVISTA.COM": "MiCasa"
+};
+
+// Familias que van directamente a cada categoría
+const FAM_PROG = new Set([
+  "PROGRAMATICA DISPLAY DIRECTO","PROGRAMATICA DISPLAY INDIRECTO",
+  "VIDEO PROGRAMATICO DIRECTO","VIDEO PROGRAMATICO INDIRECTO"
+]);
+const FAM_DIGITAL = new Set([
+  "CURATED","DISPLAY","SOCIAL NETWORKS","VIDEO"
+]);
+const FAM_PRINT = new Set([
+  "CERTIFICACIÓN","CONVENCIONAL","ELEMENTOS ESPECIALES","OTRAS FACTURACIONES","PATROCINIO"
+]);
+
+// Dentro de Sponsorship, clasificar por producto
+const SPONSORSHIP_DIGITAL = new Set([
+  "ARTICLE TRANSLATED","BRANDED CONTENT","BRANDED CONTENT SINDICATED",
+  "BRANDED CONTENT VIDEO","EDITORIAL NATIVE","PHOTO GALLERY INTEGRATED","SPONSORED NEWSLETTER"
+].map(x => x.toUpperCase()));
+
+const SPONSORSHIP_PRINT = new Set([
+  "DOBLE PAGINA BRANDED","PAGINA BRANDED"
+].map(x => x.toUpperCase()));
+
+// Dentro de Curated, distinguir por producto (capitalización)
+// Digital: producto = "Curated" (mixto) → al hacer toUpperCase = "CURATED" igual que print
+// Usamos el valor RAW antes de uppercase para distinguir
+function clasificar(famRaw, productoRaw) {
+    const fam = famRaw.trim().toUpperCase();
+    const prod = productoRaw.trim().toUpperCase();
+    const famOrig = famRaw.trim();
+    const prodOrig = productoRaw.trim();
+
+    if (fam === "EVENTOS") return { isEvent:true,  isProg:false, isPrint:false, isDigital:false };
+    if (FAM_PROG.has(fam))  return { isEvent:false, isProg:true,  isPrint:false, isDigital:false };
+
+    if (FAM_DIGITAL.has(fam)) {
+        // Curated: producto "Curated" (empieza en mayúscula, resto minúscula) = Digital
+        //          producto "CURATED" (todo mayúsculas) = Print
+        if (fam === "CURATED") {
+            if (prodOrig === "Curated") return { isEvent:false, isProg:false, isPrint:false, isDigital:true };
+            if (prodOrig === "CURATED") return { isEvent:false, isProg:false, isPrint:true,  isDigital:false };
+            // cualquier otro producto en Curated → Digital por defecto
+            return { isEvent:false, isProg:false, isPrint:false, isDigital:true };
+        }
+        return { isEvent:false, isProg:false, isPrint:false, isDigital:true };
+    }
+
+    if (FAM_PRINT.has(fam)) return { isEvent:false, isProg:false, isPrint:true, isDigital:false };
+
+    if (fam === "SPONSORSHIP") {
+        if (SPONSORSHIP_DIGITAL.has(prod)) return { isEvent:false, isProg:false, isPrint:false, isDigital:true };
+        if (SPONSORSHIP_PRINT.has(prod))   return { isEvent:false, isProg:false, isPrint:true,  isDigital:false };
+    }
+
+    return { isEvent:false, isProg:false, isPrint:false, isDigital:false };
+}
+
+function fmt(n) { return Math.round(n || 0).toLocaleString('de-DE') + "€"; }
+
+function createMonthChips(containerId, set) {
+    const cont = document.getElementById(containerId);
+    cont.innerHTML = "";
+    MESES.forEach(m => {
+        const c = document.createElement("div");
+        c.className = "chip"; 
+        c.innerText = m.substring(0,3);
+        c.onclick = () => {
+            c.classList.toggle("active");
+            set.has(m) ? set.delete(m) : set.add(m);
+            render();
+        };
+        cont.appendChild(c);
+    });
+}
+
+function buildAreaChips(areas) {
+    const grid = document.getElementById("areasGrid");
+    grid.innerHTML = "";
+    selAreas.clear();
+    areas.forEach(a => {
+        const c = document.createElement("div");
+        c.className = "chip chip-area";
+        c.innerText = a;
+        c.dataset.area = a;
+        c.onclick = () => {
+            c.classList.toggle("active");
+            selAreas.has(a) ? selAreas.delete(a) : selAreas.add(a);
+            render();
+        };
+        grid.appendChild(c);
+    });
+}
+
+fileInput.onchange = e => {
+    const r = new FileReader();
+    r.onload = ev => {
+        const wb = XLSX.read(new Uint8Array(ev.target.result), {type:"array"});
+        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: "" });
+        
+        rawData = json.map(d => {
+            const famRaw  = String(d["Familia"]  || "");
+            const pub = String(d["Publicación"] || d["PUBLICACION"] || "").trim().toUpperCase();
+            const mesStr = String(d["Mes inserción"] || d["MES_INSERCION"] || "").toUpperCase();
+            const mesEncontrado = MESES.find(m => mesStr.includes(m)) || "OTROS";
+            const producto = String(d["Producto"] || d["PRODUCTO"] || "").trim();
+            const tipos = clasificar(famRaw, producto);
+            const marcaRaw = String(d["Marca"] || d["MARCA"] || d["marca"] || "").trim().toUpperCase();
+
+            return {
+                ingreso: Number(String(d["Imp.Neto a Comisionar"] || 0).replace(/[^0-9.-]+/g,"")) || 0,
+                Año: String(d["Año inserción"] || d["ANNO_INSERCION"] || "").trim(),
+                Mes: mesEncontrado,
+                Anunciante: String(d["Anunciante"] || d["ANUNCIANTE"] || "SIN NOMBRE").trim().toUpperCase(),
+                Marca: marcaRaw || null,
+                Producto: producto || "SIN PRODUCTO",
+                Publi: PUB_MAP[pub] || pub,
+                Area: String(d["ÁREAS"] || d["AREA"] || d["área"] || d["area"] || "SIN ÁREA").trim().toUpperCase(),
+                Sector: String(d["Sector"] || d["SECTOR"] || d["sector"] || "SIN SECTOR").trim().toUpperCase(),
+                ...tipos
+            };
+        }).filter(d => d.Año !== "" && d.Publi !== "BOOK");
+
+        const years = [...new Set(rawData.map(d => d.Año))].sort().reverse();
+        fYear1.innerHTML = `<option value="">Elige un año</option>` + years.map(y => `<option>${y}</option>`).join("");
+        fYear2.innerHTML = `<option value="">Año a comparar</option>` + years.map(y => `<option>${y}</option>`).join("");
+
+        const pubs = [...new Set(rawData.map(d => d.Publi))].sort();
+        fPub.innerHTML = `<option value="TODOS">Todas las Marcas</option>` + pubs.map(p => `<option>${p}</option>`).join("");
+
+        // Sectores → select
+        const sectors = [...new Set(rawData.map(d => d.Sector))].sort();
+        fSector.innerHTML = `<option value="TODOS">Todos los Sectores</option>` + sectors.map(s => `<option>${s}</option>`).join("");
+
+        // Áreas → chips multi-selección
+        const areas = [...new Set(rawData.map(d => d.Area))].sort();
+        buildAreaChips(areas);
+
+        createMonthChips("months1", selM1);
+        createMonthChips("months2", selM2);
+        document.getElementById("mainUI").style.display = "block";
+        document.getElementById("resultsContent").style.display = "none";
+    };
+    r.readAsArrayBuffer(e.target.files[0]);
+};
+
+function render() {
+    const y1 = fYear1.value, y2 = fYear2.value, pF = fPub.value, sF = fSector.value;
+    
+    if (!y1 || !y2) {
+        document.getElementById("resultsContent").style.display = "none";
+        return;
+    }
+
+    document.getElementById("resultsContent").style.display = "block";
+    y1Lab.innerText = y1; y2Lab.innerText = y2;
+
+    // ads[anunciante][marca] → datos
+    const ads = {};
+
+    rawData.forEach(d => {
+        if (pF !== "TODOS" && d.Publi !== pF) return;
+        if (sF !== "TODOS" && d.Sector !== sF) return;
+        if (selAreas.size > 0 && !selAreas.has(d.Area)) return;
+
+        const passM1 = selM1.size === 0 || selM1.has(d.Mes);
+        const passM2 = selM2.size === 0 || selM2.has(d.Mes);
+
+        let target = null;
+        if (d.Año === y1 && passM1) target = "y1";
+        else if (d.Año === y2 && passM2) target = "y2";
+        if (!target) return;
+
+        // Nivel anunciante
+        if (!ads[d.Anunciante]) ads[d.Anunciante] = { y1:0,y2:0,ev1:0,ev2:0,pr1:0,pr2:0,di1:0,di2:0,pg1:0,pg2:0, marcas:{} };
+        const a = ads[d.Anunciante];
+
+        // Nivel marca (si existe)
+        const marcaKey = d.Marca || "__SIN_MARCA__";
+        if (!a.marcas[marcaKey]) a.marcas[marcaKey] = { y1:0,y2:0,ev1:0,ev2:0,pr1:0,pr2:0,di1:0,di2:0,pg1:0,pg2:0, productos:{} };
+        const m = a.marcas[marcaKey];
+
+        // Nivel producto (clave = producto + publi para distinguir misma producto en distintas publis)
+        const prodKey = (d.Producto || "SIN PRODUCTO") + "||" + (d.Publi || "");
+        if (!m.productos[prodKey]) m.productos[prodKey] = { y1:0,y2:0,ev1:0,ev2:0,pr1:0,pr2:0,di1:0,di2:0,pg1:0,pg2:0, nombre: d.Producto || "SIN PRODUCTO", publi: d.Publi || "" };
+        const p = m.productos[prodKey];
+
+        const addTo = (obj, t) => {
+            obj[t === "y1" ? "y1" : "y2"] += d.ingreso;
+            if(d.isEvent)   obj[t === "y1" ? "ev1" : "ev2"] += d.ingreso;
+            if(d.isPrint)   obj[t === "y1" ? "pr1" : "pr2"] += d.ingreso;
+            if(d.isDigital) obj[t === "y1" ? "di1" : "di2"] += d.ingreso;
+            if(d.isProg)    obj[t === "y1" ? "pg1" : "pg2"] += d.ingreso;
+        };
+        addTo(a, target);
+        addTo(m, target);
+        addTo(p, target);
+    });
+
+    const sorted = Object.keys(ads).map(k => ({name:k, ...ads[k]})).sort((a,b) => b.y1 - a.y1);
+    let s1 = 0, s2 = 0; sorted.forEach(x => { s1 += x.y1; s2 += x.y2; });
+    totalV1.innerText = fmt(s1); totalV2.innerText = fmt(s2);
+    
+    const diff = s1 - s2, perc = s2 ? (diff/s2)*100 : 0;
+    totalVar.innerHTML = `<span style="font-size:32px; font-weight:900;" class="${diff>=0?'pos':'neg'}">${diff>=0?'+':''}${perc.toFixed(0)}%</span><br><span style="font-weight:700" class="${diff>=0?'pos':'neg'}">(${diff>=0?'+':''}${fmt(diff)})</span>`;
+
+    renderContainer.innerHTML = sorted.map(a => {
+        // Ordenar marcas por facturación y filtrar sin marca si hay marcas reales
+        const marcasEntries = Object.entries(a.marcas);
+        const marcasReales = marcasEntries.filter(([k,v]) => k !== "__SIN_MARCA__" && v.y1 > 0).sort((x,y) => y[1].y1 - x[1].y1);
+        const hasMarcas = marcasReales.length > 0;
+
+        const marcasHTML = hasMarcas ? marcasReales.map(([nombre, m]) => {
+            const prodsConIngreso = Object.entries(m.productos).filter(([,p]) => p.y1 > 0).sort((x,y) => y[1].y1 - x[1].y1);
+            const hasProds = prodsConIngreso.length > 0;
+            const brandId = "brand-" + (a.name + nombre).replace(/[^a-z0-9]/gi,"_");
+            const prodsHTML = hasProds ? prodsConIngreso.map(([, p]) => `
+                <div class="prod-row">
+                    <div class="prod-name">↳ ${p.nombre} <span style="color:#0ea5e9; margin-left:6px; font-size:9px; font-weight:700; background:rgba(14,165,233,0.15); padding:1px 5px; border-radius:4px;">${p.publi}</span></div>
+                    <div class="prod-data-cell col-main-prod"><span class="v-val-prod">${fmt(p.y1)}</span>${getTrendHTML(p.y1, p.y2)}</div>
+                    <div class="prod-data-cell"><span class="v-val-prod">${fmt(p.ev1)}</span>${getTrendHTML(p.ev1, p.ev2)}</div>
+                    <div class="prod-data-cell"><span class="v-val-prod">${fmt(p.pr1)}</span>${getTrendHTML(p.pr1, p.pr2)}</div>
+                    <div class="prod-data-cell"><span class="v-val-prod">${fmt(p.di1)}</span>${getTrendHTML(p.di1, p.di2)}</div>
+                    <div class="prod-data-cell"><span class="v-val-prod">${fmt(p.pg1)}</span>${getTrendHTML(p.pg1, p.pg2)}</div>
+                </div>`).join("") : "";
+            return `
+            <div class="brand-block">
+                <div class="brand-row">
+                    <div class="brand-name" ${hasProds ? `onclick="toggleBrands('${brandId}')" style="cursor:pointer"` : ""}>
+                        ${hasProds ? `<span class="toggle-icon" id="icon-${brandId}">▶</span>` : `<span style="width:14px;display:inline-block"></span>`}
+                        ${nombre}
+                    </div>
+                    <div class="brand-data-cell col-main"><span class="v-val">${fmt(m.y1)}</span>${getTrendHTML(m.y1, m.y2)}</div>
+                    <div class="brand-data-cell"><span class="v-val">${fmt(m.ev1)}</span>${getTrendHTML(m.ev1, m.ev2)}</div>
+                    <div class="brand-data-cell"><span class="v-val">${fmt(m.pr1)}</span>${getTrendHTML(m.pr1, m.pr2)}</div>
+                    <div class="brand-data-cell"><span class="v-val">${fmt(m.di1)}</span>${getTrendHTML(m.di1, m.di2)}</div>
+                    <div class="brand-data-cell"><span class="v-val">${fmt(m.pg1)}</span>${getTrendHTML(m.pg1, m.pg2)}</div>
+                </div>
+                ${hasProds ? `<div class="prods-container" id="${brandId}">${prodsHTML}</div>` : ""}
+            </div>`;
+        }).join("") : "";
+        const advId = "adv-" + a.name.replace(/[^a-z0-9]/gi,"_");
+
+        return `
+        <div class="adv-row">
+            <div class="grid-layout" style="min-height:56px;">
+                <div class="adv-name" onclick="${hasMarcas ? `toggleBrands('${advId}')` : ''}">
+                    ${hasMarcas ? `<span class="toggle-icon" id="icon-${advId}">▶</span>` : `<span style="width:14px;display:inline-block"></span>`}
+                    ${a.name}
+                </div>
+                <div class="data-cell col-main"><span class="v-val-main">${fmt(a.y1)}</span>${getTrendHTML(a.y1, a.y2)}</div>
+                <div class="data-cell"><span class="v-val">${fmt(a.ev1)}</span>${getTrendHTML(a.ev1, a.ev2)}</div>
+                <div class="data-cell"><span class="v-val">${fmt(a.pr1)}</span>${getTrendHTML(a.pr1, a.pr2)}</div>
+                <div class="data-cell"><span class="v-val">${fmt(a.di1)}</span>${getTrendHTML(a.di1, a.di2)}</div>
+                <div class="data-cell"><span class="v-val">${fmt(a.pg1)}</span>${getTrendHTML(a.pg1, a.pg2)}</div>
+            </div>
+            ${hasMarcas ? `<div class="brands-container" id="${advId}">${marcasHTML}</div>` : ""}
+        </div>`;
+    }).join("");
+}
+
+function toggleBrands(id) {
+    const cont = document.getElementById(id);
+    const icon = document.getElementById("icon-" + id);
+    if (!cont) return;
+    const isOpen = cont.classList.toggle("open");
+    if (icon) icon.classList.toggle("open", isOpen);
+}
+
+function getTrendHTML(v1, v2) {
+    if(!v2 || v2 === 0) return `<div class="trend-line"><span style="color:#64748b">—</span></div>`;
+    const d = v1 - v2, p = (d/v2)*100;
+    const cl = d >= 0 ? 'pos' : 'neg';
+    return `<div class="trend-line"><span class="${cl}">${d>=0?'+':''}${p.toFixed(0)}%</span> <span class="${cl}" style="font-weight:400">(${d>=0?'+':''}${fmt(d)})</span></div>`;
+}
+
+fYear1.onchange = fYear2.onchange = fPub.onchange = fSector.onchange = render;
+</script>
+</body>
+</html>
