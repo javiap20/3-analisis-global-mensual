@@ -360,7 +360,22 @@ function processWorkbook(arrayBuffer) {
         document.getElementById("resultsContent").style.display = "none";
 }
 
-// Carga manual del archivo
+// Carga automática (funciona cuando el HTML está en un servidor junto al Excel)
+fetch("PRINT Y DIGITAL.xlsx")
+    .then(r => {
+        if (!r.ok) throw new Error("No se pudo cargar el archivo");
+        return r.arrayBuffer();
+    })
+    .then(buffer => {
+        document.getElementById("loadCard").querySelector("label").innerText = "✓ Datos cargados automáticamente: PRINT Y DIGITAL.xlsx";
+        processWorkbook(buffer);
+    })
+    .catch(() => {
+        // Si falla la carga automática, el input manual ya está visible
+        document.getElementById("loadCard").querySelector("label").innerText = "Carga automática no disponible. Carga el Excel manualmente:";
+    });
+
+// Carga manual (siempre disponible)
 fileInput.onchange = e => {
     const f = e.target.files[0];
     if (!f) return;
