@@ -368,6 +368,7 @@ fetch("PRINT Y DIGITAL.xlsx")
     })
     .then(buffer => {
         document.getElementById("loadCard").querySelector("label").innerText = "✓ Datos cargados automáticamente: PRINT Y DIGITAL.xlsx";
+        document.getElementById("fileInput").style.display = "none";
         processWorkbook(buffer);
     })
     .catch(() => {
