@@ -141,8 +141,8 @@ h1, .subtitle { text-align: center; }
 
 <div class="container">
     <div class="card" id="loadCard">
-        <label id="loadStatus">Cargando datos...</label>
-        <input type="file" id="fileInput" accept=".xlsx" style="display:none">
+        <label style="font-size: 0.9em; font-weight: bold; color: #94a3b8;">Cargar datos (Excel):</label>
+        <input type="file" id="fileInput" accept=".xlsx" style="background:#0f172a; color:#fff; border:1px solid #4b5563; padding:8px; border-radius:8px; width:100%; box-sizing:border-box; font-size:12px; cursor:pointer; margin-top:6px;">
     </div>
 
     <div id="mainUI" style="display:none">
@@ -358,31 +358,15 @@ function processWorkbook(arrayBuffer) {
         createMonthChips("months2", selM2);
         document.getElementById("mainUI").style.display = "block";
         document.getElementById("resultsContent").style.display = "none";
-    };
 }
 
-// Carga automática
-fetch("PRINT Y DIGITAL.xlsx")
-    .then(r => {
-        if (!r.ok) throw new Error("No se pudo cargar el archivo");
-        return r.arrayBuffer();
-    })
-    .then(buffer => {
-        document.getElementById("loadStatus").innerText = "✓ Datos cargados: PRINT Y DIGITAL.xlsx";
-        processWorkbook(buffer);
-    })
-    .catch(() => {
-        // Si falla, mostrar input manual
-        const card = document.getElementById("loadCard");
-        card.querySelector("label").innerText = "No se encontró el archivo automáticamente. Cárgalo manualmente:";
-        document.getElementById("fileInput").style.display = "block";
-    });
-
-// Carga manual como fallback
+// Carga manual del archivo
 fileInput.onchange = e => {
+    const f = e.target.files[0];
+    if (!f) return;
     const r = new FileReader();
     r.onload = ev => processWorkbook(ev.target.result);
-    r.readAsArrayBuffer(e.target.files[0]);
+    r.readAsArrayBuffer(f);
 };
 
 function render() {
