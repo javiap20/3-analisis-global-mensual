@@ -375,7 +375,8 @@ function selectType(type) {
     const statusEl = document.querySelector('#fileInput + *') || document.querySelector('.card label');
     fetch(excelUrl).then(resp => resp.ok ? resp.arrayBuffer() : null).then(buf => {
         if (buf) {
-            init(XLSX.utils.sheet_to_json(XLSX.read(buf, {type:"array"}).Sheets[XLSX.read(buf, {type:"array"}).SheetNames[0]], {defval:""}));
+            const wb = XLSX.read(buf, {type:"array"});
+            init(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {defval:""}));
         }
     }).catch(() => {});
 }
