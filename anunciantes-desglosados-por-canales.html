@@ -326,7 +326,7 @@ const PUB_MAP = {
     "ESQUIRE": "Esquire", "WWW.ESQUIRE.COM/ES/": "Esquire",
     "FOTOGRAMAS & VIDEO": "Fotogramas", "WWW.FOTOGRAMAS.ES": "Fotogramas",
     "HARPER´S BAZAAR": "Harper's Bazaar", "WWW.HARPERSBAZAAR.COM/ES": "Harper's Bazaar",
-    "MEN´S HEALTH": "Men's Health", "WWW.MENSHEALTH.COM/ES/": "Men's Health",
+    "MEN´S HEALTH": "Men's Health", "MEN'S HEALTH": "Men's Health", "WWW.MENSHEALTH.COM/ES/": "Men's Health", "WWW.MENSHEALTH.COM/ES": "Men's Health",
     "NUEVO ESTILO": "Nuevo Estilo", "WWW.NUEVO-ESTILO.ES": "Nuevo Estilo",
     "RUNNER´S WORLD": "Runner's World", "WWW.RUNNERSWORLD.COM/ES/": "Runner's World",
     "WOMEN´S HEALTH": "Women's Health", "WWW.WOMENSHEALTHMAG.COM/ES/": "Women's Health",
@@ -347,16 +347,16 @@ function clasificar(famRaw, productoRaw) {
     if (FAM_PROG.has(fam))  return { isEvent:false, isProg:true,  isPrint:false, isDigital:false, family: fam || 'SIN FAMILIA' };
     if (FAM_DIGITAL.has(fam)) {
         if (fam === "CURATED") {
-            if (prodOrig === "Curated") return { isEvent:false, isProg:false, isPrint:false, isDigital:true, family: fam };
-            if (prodOrig === "CURATED") return { isEvent:false, isProg:false, isPrint:true,  isDigital:false, family: fam };
-            return { isEvent:false, isProg:false, isPrint:false, isDigital:true, family: fam };
+            if (prodOrig === "Curated") return { isEvent:false, isProg:false, isPrint:false, isDigital:true, family: 'CURATED (Digital)' };
+            if (prodOrig === "CURATED") return { isEvent:false, isProg:false, isPrint:true,  isDigital:false, family: 'CURATED (Print)' };
+            return { isEvent:false, isProg:false, isPrint:false, isDigital:true, family: 'CURATED (Digital)' };
         }
         return { isEvent:false, isProg:false, isPrint:false, isDigital:true, family: fam };
     }
     if (FAM_PRINT.has(fam)) return { isEvent:false, isProg:false, isPrint:true, isDigital:false, family: fam };
     if (fam === "SPONSORSHIP") {
-        if (SPONSORSHIP_DIGITAL.has(prod)) return { isEvent:false, isProg:false, isPrint:false, isDigital:true, family: fam };
-        if (SPONSORSHIP_PRINT.has(prod))   return { isEvent:false, isProg:false, isPrint:true,  isDigital:false, family: fam };
+        if (SPONSORSHIP_PRINT.has(prod)) return { isEvent:false, isProg:false, isPrint:true,  isDigital:false, family: 'SPONSORSHIP (Print)' };
+        return { isEvent:false, isProg:false, isPrint:false, isDigital:true, family: 'SPONSORSHIP (Digital)' };
     }
     return { isEvent:false, isProg:false, isPrint:false, isDigital:false, family: fam || 'SIN FAMILIA' };
 }
