@@ -205,6 +205,57 @@ h1, .subtitle { text-align: center; }
   font-weight: 600;
   letter-spacing: .02em;
 }
+
+/* KPIs ejecutivo */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+.kpi-label {
+  font-size: 10px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: .06em;
+  margin-bottom: 8px;
+}
+.kpi-value { font-size: 20px; font-weight: 900; color: #fff; }
+.kpi-value.neg { color: #f87171; }
+.kpi-value.pos { color: #34d399; }
+.kpi-value.warn { color: #fbbf24; }
+.kpi-sub { font-size: 10px; color: #94a3b8; margin-top: 4px; font-weight: 600; }
+
+/* Bloques extra */
+.extra-block { margin-top: 28px; }
+.extra-block-title {
+  font-size: 13px; font-weight: 800; color: #e5e7eb;
+  text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1e293b;
+}
+.extra-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.extra-table th {
+  background: #1e293b; color: #94a3b8; font-size: 10px;
+  text-transform: uppercase; font-weight: 700; padding: 10px 12px; text-align: left;
+}
+.extra-table th:not(:first-child) { text-align: right; }
+.extra-table td {
+  padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: #e5e7eb; font-weight: 600;
+}
+.extra-table td:not(:first-child) { text-align: right; }
+.extra-table tr:last-child td { border-bottom: none; }
+.extra-table tr:hover td { background: rgba(255,255,255,0.03); }
+.badge-nuevo { background:#065f46; color:#6ee7b7; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:900; }
+.badge-crece { background:#1e3a8a; color:#bfdbfe; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:900; }
 </style>
 </head>
 <body>
@@ -266,6 +317,12 @@ h1, .subtitle { text-align: center; }
         </div>
 
         <div id="resultsContent" style="display:none">
+
+            <!-- KPIs ejecutivo — bloque 1: anunciantes -->
+            <div class="kpi-grid" id="kpiGrid" style="margin-bottom:12px;"></div>
+            <!-- KPIs ejecutivo — bloque 2: área, sectores, publicaciones -->
+            <div class="kpi-grid" id="kpiGrid2" style="margin-bottom:20px;"></div>
+
             <div class="totalBlock">
                 <div class="totalValues">
                     <div>
@@ -303,6 +360,19 @@ h1, .subtitle { text-align: center; }
                 </div>
                 <div id="lostContainer" class="lost-card"></div>
             </div>
+
+            <!-- Bloque: Top 10 nuevos anunciantes -->
+            <div class="extra-block card" id="blockNuevos">
+                <div class="extra-block-title">🟢 Top 10 — Nuevos anunciantes <span id="nuevosYear" style="font-weight:400; color:#64748b; font-size:11px;"></span></div>
+                <table class="extra-table" id="tableNuevos"></table>
+            </div>
+
+            <!-- Bloque: Top 10 mayor crecimiento -->
+            <div class="extra-block card" id="blockCrecimiento">
+                <div class="extra-block-title">📈 Top 10 — Mayor crecimiento <span id="crecYear" style="font-weight:400; color:#64748b; font-size:11px;"></span></div>
+                <table class="extra-table" id="tableCrecimiento"></table>
+            </div>
+
         </div>
     </div>
 </div>
@@ -412,7 +482,7 @@ function processWorkbook(arrayBuffer) {
             Producto: producto || 'SIN PRODUCTO',
             Publi: PUB_MAP[pub] || pub,
             Area: String(d['ÁREAS'] || d['AREA'] || d['área'] || d['area'] || 'SIN ÁREA').trim().toUpperCase(),
-            Sector: String(d['Sector'] || d['SECTOR'] || d['sector'] || 'SIN SECTOR').trim().toUpperCase(),
+            Sector: String(d['Sector'] || d['SECTOR'] || d['sector'] || 'SIN SECTOR').trim().toUpperCase().replace(/^\d+\s*\*\s*/, ''),
             Familia: tipos.family || (famRaw.trim().toUpperCase() || 'SIN FAMILIA'),
             _channel: tipos.isEvent ? 'EVENTOS' : tipos.isProg ? 'PROGRAMÁTICA' : tipos.isPrint ? 'PRINT' : 'DIGITAL',
             ...tipos
@@ -660,6 +730,9 @@ function render() {
     yearBtn2.innerText = fYear2.value ? `(${fYear2.value})` : '';
 
     const ads = aggregate(currentView);
+    renderKPIs(ads);
+    renderNuevos(ads);
+    renderCrecimiento(ads);
     if (currentView === 'ranking') {
         document.getElementById('rankingView').style.display = 'block';
         document.getElementById('lostView').style.display = 'none';
@@ -693,6 +766,219 @@ function getTrendHTML(v1, v2) {
     
     const cl = d >= 0 ? 'pos' : 'neg'; 
     return `<div class="trend-line"><span class="${cl}">${d>=0?'+':''}${p.toFixed(0)}%</span> <span class="${cl}" style="font-weight:400">(${d>=0?'+':''}${fmt(d)})</span></div>`; 
+}
+
+function renderKPIs(ads) {
+    const y1 = fYear1.value, y2 = fYear2.value;
+
+    // ── Datos filtrados ──────────────────────────────────────────────────────
+    const passedData = rawData.filter(d => passFilters(d));
+
+    // ── Por publicación ──────────────────────────────────────────────────────
+    const byPubY1 = {}, byPubY2 = {};
+    passedData.forEach(d => {
+        const passM1 = selM1.size === 0 || selM1.has(d.Mes);
+        const passM2 = selM2.size === 0 || selM2.has(d.Mes);
+        if (d.Año === y1 && passM1) byPubY1[d.Publi] = (byPubY1[d.Publi] || 0) + d.ingreso;
+        if (d.Año === y2 && passM2) byPubY2[d.Publi] = (byPubY2[d.Publi] || 0) + d.ingreso;
+    });
+    const pubDiffs = {};
+    new Set([...Object.keys(byPubY1), ...Object.keys(byPubY2)]).forEach(p => {
+        pubDiffs[p] = (byPubY1[p] || 0) - (byPubY2[p] || 0);
+    });
+    const topPubLoss3 = Object.entries(pubDiffs).sort((a,b) => a[1]-b[1]).slice(0,3);
+    const topPubGain3 = Object.entries(pubDiffs).sort((a,b) => b[1]-a[1]).slice(0,3);
+
+    // ── Por sector ───────────────────────────────────────────────────────────
+    const bySectorY1 = {}, bySectorY2 = {};
+    passedData.forEach(d => {
+        const passM1 = selM1.size === 0 || selM1.has(d.Mes);
+        const passM2 = selM2.size === 0 || selM2.has(d.Mes);
+        if (d.Año === y1 && passM1) bySectorY1[d.Sector] = (bySectorY1[d.Sector] || 0) + d.ingreso;
+        if (d.Año === y2 && passM2) bySectorY2[d.Sector] = (bySectorY2[d.Sector] || 0) + d.ingreso;
+    });
+    const sectorDiffs = {};
+    new Set([...Object.keys(bySectorY1), ...Object.keys(bySectorY2)]).forEach(s => {
+        sectorDiffs[s] = (bySectorY1[s] || 0) - (bySectorY2[s] || 0);
+    });
+    const topSectorLoss = Object.entries(sectorDiffs).filter(([k])=>k!=='SIN SECTOR').sort((a,b) => a[1]-b[1]).slice(0,3);
+    const topSectorGain = Object.entries(sectorDiffs).filter(([k])=>k!=='SIN SECTOR').sort((a,b) => b[1]-a[1]).slice(0,3);
+
+    // ── Por área ─────────────────────────────────────────────────────────────
+    const byAreaY1 = {}, byAreaY2 = {};
+    passedData.forEach(d => {
+        const passM1 = selM1.size === 0 || selM1.has(d.Mes);
+        const passM2 = selM2.size === 0 || selM2.has(d.Mes);
+        if (d.Año === y1 && passM1) byAreaY1[d.Area] = (byAreaY1[d.Area] || 0) + d.ingreso;
+        if (d.Año === y2 && passM2) byAreaY2[d.Area] = (byAreaY2[d.Area] || 0) + d.ingreso;
+    });
+    const areaDiffs = {};
+    new Set([...Object.keys(byAreaY1), ...Object.keys(byAreaY2)]).forEach(a => {
+        areaDiffs[a] = (byAreaY1[a] || 0) - (byAreaY2[a] || 0);
+    });
+    const topAreaLoss = Object.entries(areaDiffs).filter(([k])=>k!=='SIN ÁREA').sort((a,b) => a[1]-b[1])[0];
+
+    // ── Métricas de anunciantes ──────────────────────────────────────────────
+    // Anunciantes que han DESAPARECIDO: tenían algo en y2 y nada en y1
+    const advPerdidos   = Object.values(ads).filter(a => a.y2 > 0 && a.y1 === 0);
+    // Anunciantes NUEVOS: tenían nada en y2 y algo en y1
+    const advGanados    = Object.values(ads).filter(a => a.y2 === 0 && a.y1 > 0);
+    // Anunciantes que BAJAN (existían en ambos años pero facturan menos)
+    const advBajan      = Object.values(ads).filter(a => a.y1 > 0 && a.y2 > 0 && a.y1 < a.y2);
+    // Anunciantes que SUBEN (existían en ambos años y facturan más)
+    const advSuben      = Object.values(ads).filter(a => a.y1 > 0 && a.y2 > 0 && a.y1 > a.y2);
+
+    const totalPerdido  = advPerdidos.reduce((s, a) => s + a.y2, 0); // ingreso que tenían en y2 y ya no está
+    const totalGanado   = advGanados.reduce((s, a) => s + a.y1, 0);  // ingreso nuevo en y1
+    const totalBajan    = advBajan.reduce((s, a) => s + a.y2, 0);    // ingreso total de los que bajan (en y2)
+    const totalSuben    = advSuben.reduce((s, a) => s + a.y1, 0);    // ingreso total de los que suben (en y1)
+
+    // ── Helper renderTop3 ────────────────────────────────────────────────────
+    function renderTop3List(items, cls, suffix) {
+        return items.map((item, i) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:${i>0?'4px 0 0':'0'}; ${i>0?'border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;':''}">
+                <span style="font-size:9px; color:${cls==='pos'?'#34d399':'#f87171'}; font-weight:700; text-align:left; line-height:1.2;">${item[0]}</span>
+                <span style="font-size:9px; color:#94a3b8; font-weight:600; white-space:nowrap; margin-left:6px;">${fmt(Math.abs(item[1]))} ${suffix}</span>
+            </div>`).join('');
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // BLOQUE 1 — Anunciantes
+    // ════════════════════════════════════════════════════════════════════════
+    const b1 = document.getElementById('kpiGrid');
+    b1.innerHTML = '';
+
+    // Anunciantes que suben ingreso ↑ (verde)
+    b1.innerHTML += `
+        <div class="kpi-card" style="border-color:#065f46;">
+            <div class="kpi-label">Anunciantes que ↑ ingreso</div>
+            <div class="kpi-value pos" style="font-size:26px;">${advSuben.length}</div>
+            <div class="kpi-sub">${fmt(totalSuben)} en ${y1}</div>
+        </div>`;
+
+    // Total ganado — anunciantes nuevos (verde)
+    b1.innerHTML += `
+        <div class="kpi-card" style="border-color:#065f46;">
+            <div class="kpi-label">Total ganado vs ${y2}</div>
+            <div class="kpi-value pos">${fmt(totalGanado)}</div>
+            <div class="kpi-sub">${advGanados.length} anunciante${advGanados.length!==1?'s':''} nuevo${advGanados.length!==1?'s':''} en ${y1}</div>
+        </div>`;
+
+    // Total perdido — anunciantes desaparecidos (rojo)
+    b1.innerHTML += `
+        <div class="kpi-card" style="border-color:#7f1d1d;">
+            <div class="kpi-label">Total perdido vs ${y2}</div>
+            <div class="kpi-value neg">${fmt(totalPerdido)}</div>
+            <div class="kpi-sub">${advPerdidos.length} anunciante${advPerdidos.length!==1?'s':''} perdido${advPerdidos.length!==1?'s':''} de ${y2}</div>
+        </div>`;
+
+    // Anunciantes que bajan ingreso ↓ (rojo)
+    b1.innerHTML += `
+        <div class="kpi-card" style="border-color:#7f1d1d;">
+            <div class="kpi-label">Anunciantes que ↓ ingreso</div>
+            <div class="kpi-value neg" style="font-size:26px;">${advBajan.length}</div>
+            <div class="kpi-sub">${fmt(totalBajan)} en ${y2}</div>
+        </div>`;
+
+    // ════════════════════════════════════════════════════════════════════════
+    // BLOQUE 2 — Área, sectores, publicaciones
+    // ════════════════════════════════════════════════════════════════════════
+    const b2 = document.getElementById('kpiGrid2');
+    b2.innerHTML = '';
+
+    // Área con más pérdida (amarillo)
+    b2.innerHTML += `
+        <div class="kpi-card" style="border-color:#92400e;">
+            <div class="kpi-label">Área con más pérdida</div>
+            <div class="kpi-value warn" style="font-size:16px;">${topAreaLoss ? topAreaLoss[0] : '—'}</div>
+            ${topAreaLoss ? `<div class="kpi-sub">${fmt(Math.abs(topAreaLoss[1]))} menos</div>` : ''}
+        </div>`;
+
+    // Sectores con más ganancia (verde)
+    b2.innerHTML += `
+        <div class="kpi-card" style="border-color:#065f46;">
+            <div class="kpi-label" style="color:#34d399;">Sectores con más ganancia</div>
+            <div style="margin-top:6px;">${renderTop3List(topSectorGain, 'pos', 'más')}</div>
+        </div>`;
+
+    // Sectores con más pérdida (rojo)
+    b2.innerHTML += `
+        <div class="kpi-card" style="border-color:#7f1d1d;">
+            <div class="kpi-label" style="color:#f87171;">Sectores con más pérdida</div>
+            <div style="margin-top:6px;">${renderTop3List(topSectorLoss, 'neg', 'menos')}</div>
+        </div>`;
+
+    // Publicaciones con más ganancia (verde)
+    b2.innerHTML += `
+        <div class="kpi-card" style="border-color:#065f46;">
+            <div class="kpi-label" style="color:#34d399;">Publicaciones con más ganancia</div>
+            <div style="margin-top:6px;">${renderTop3List(topPubGain3, 'pos', 'más')}</div>
+        </div>`;
+
+    // Publicaciones con más pérdida (rojo)
+    b2.innerHTML += `
+        <div class="kpi-card" style="border-color:#7f1d1d;">
+            <div class="kpi-label" style="color:#f87171;">Publicaciones con más pérdida</div>
+            <div style="margin-top:6px;">${renderTop3List(topPubLoss3, 'neg', 'menos')}</div>
+        </div>`;
+}
+
+function renderNuevos(ads) {
+    const y1 = fYear1.value, y2 = fYear2.value;
+    document.getElementById('nuevosYear').innerText = `(${y1} vs ${y2})`;
+    const nuevos = Object.entries(ads)
+        .filter(([,a]) => a.y1 > 0 && a.y2 === 0)
+        .sort((a,b) => b[1].y1 - a[1].y1)
+        .slice(0, 10);
+
+    if (nuevos.length === 0) {
+        document.getElementById('tableNuevos').innerHTML = `<tr><td colspan="6" style="color:#64748b; text-align:center; padding:20px;">No hay anunciantes nuevos con los filtros seleccionados</td></tr>`;
+        return;
+    }
+    document.getElementById('tableNuevos').innerHTML = `
+        <thead><tr>
+            <th>Anunciante</th><th>Total ${y1}</th><th>Eventos</th><th>Print</th><th>Digital</th><th>Prog.</th>
+        </tr></thead>
+        <tbody>${nuevos.map(([name, a], i) => `
+        <tr>
+            <td><span style="color:#64748b; margin-right:8px; font-size:10px;">${i+1}</span>${name} <span class="badge-nuevo">NUEVO</span></td>
+            <td class="pos" style="font-weight:800">${fmt(a.y1)}</td>
+            <td>${fmt(a.ev1)}</td><td>${fmt(a.pr1)}</td><td>${fmt(a.di1)}</td><td>${fmt(a.pg1)}</td>
+        </tr>`).join('')}
+        </tbody>`;
+}
+
+function renderCrecimiento(ads) {
+    const y1 = fYear1.value, y2 = fYear2.value;
+    document.getElementById('crecYear').innerText = `(${y1} vs ${y2})`;
+    const crecen = Object.entries(ads)
+        .filter(([,a]) => a.y1 > a.y2 && a.y2 > 0) // tienen histórico y han crecido
+        .map(([name, a]) => {
+            const diff = a.y1 - a.y2;
+            const perc = (diff / a.y2) * 100;
+            return { name, a, diff, perc };
+        })
+        .sort((a,b) => b.diff - a.diff)
+        .slice(0, 10);
+
+    if (crecen.length === 0) {
+        document.getElementById('tableCrecimiento').innerHTML = `<tr><td colspan="7" style="color:#64748b; text-align:center; padding:20px;">No hay anunciantes con crecimiento con los filtros seleccionados</td></tr>`;
+        return;
+    }
+    document.getElementById('tableCrecimiento').innerHTML = `
+        <thead><tr>
+            <th>Anunciante</th><th>Total ${y1}</th><th>Total ${y2}</th><th>Δ €</th><th>Δ %</th><th>Eventos</th><th>Print</th>
+        </tr></thead>
+        <tbody>${crecen.map(({name, a, diff, perc}, i) => `
+        <tr>
+            <td><span style="color:#64748b; margin-right:8px; font-size:10px;">${i+1}</span>${name}</td>
+            <td style="font-weight:800; color:#fff">${fmt(a.y1)}</td>
+            <td style="color:#94a3b8">${fmt(a.y2)}</td>
+            <td class="pos" style="font-weight:800">+${fmt(diff)}</td>
+            <td><span class="badge-crece">+${perc.toFixed(0)}%</span></td>
+            <td>${fmt(a.ev1)}</td><td>${fmt(a.pr1)}</td>
+        </tr>`).join('')}
+        </tbody>`;
 }
 
 function setView(view) { 
