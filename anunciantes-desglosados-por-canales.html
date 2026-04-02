@@ -83,6 +83,9 @@ select {
 .chip.active { background: var(--brand-cian); color: #000; font-weight: bold; border-color: var(--brand-cian); }
 .chip-area { font-size: 9px; padding: 5px 4px; }
 .chip-red.active { background: #fb7185; border-color: #fb7185; color: #111827; }
+.chip-green.active { background: #34d399; border-color: #34d399; color: #111827; font-weight: bold; }
+.chip-vista { font-size: 11px; padding: 7px 14px; border-radius: 6px; }
+.f-vista { background-color: #0f1f1a; border: 1px solid rgba(52,211,153,0.3); }
 
 .totalBlock { 
     background: var(--total-bg); color: var(--total-text); padding: 20px; border-radius: 12px; 
@@ -311,9 +314,18 @@ h1, .subtitle { text-align: center; }
             <div id="familiasGrid" class="family-grid"></div>
         </div>
 
-        <div class="filter-group f-canales" style="margin-top:15px; margin-bottom:22px;">
-            <label>Canales <span style="color:#64748b; font-size:10px; font-weight:400;">(puedes elegir uno, varios o ninguno)</span></label>
-            <div id="channelGrid" class="channel-grid"></div>
+        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:15px; margin-bottom:22px;">
+            <div class="filter-group f-canales" style="flex:1; min-width:220px;">
+                <label>Canales <span style="color:#64748b; font-size:10px; font-weight:400;">(puedes elegir uno, varios o ninguno)</span></label>
+                <div id="channelGrid" class="channel-grid"></div>
+            </div>
+            <div class="filter-group f-vista" style="flex:0 0 auto; min-width:180px;">
+                <label style="color:#34d399;">Vista rápida <span style="color:#64748b; font-size:10px; font-weight:400;">(filtra el ranking)</span></label>
+                <div id="vistaGrid" class="channel-grid" style="margin-top:8px; gap:8px;">
+                    <div class="chip chip-vista chip-green" id="chipGanados" onclick="toggleVista('GANADOS')">🟢 GANADOS</div>
+                    <div class="chip chip-vista chip-red"   id="chipPerdidos" onclick="toggleVista('PERDIDOS')">🔴 PERDIDOS</div>
+                </div>
+            </div>
         </div>
 
         <div id="resultsContent" style="display:none">
@@ -384,6 +396,7 @@ let selM1 = new Set(), selM2 = new Set();
 let selAreas = new Set();
 let selFamilias = new Set();
 let selChannels = new Set();
+let selVista = null; // null | 'GANADOS' | 'PERDIDOS'
 let currentView = 'ranking';
 
 const PUB_MAP = {
@@ -565,8 +578,22 @@ function aggregate(mode='ranking') {
     return ads;
 }
 
+function toggleVista(vista) {
+    selVista = (selVista === vista) ? null : vista;
+    document.getElementById('chipGanados').classList.toggle('active', selVista === 'GANADOS');
+    document.getElementById('chipPerdidos').classList.toggle('active', selVista === 'PERDIDOS');
+    render();
+}
+
 function renderRanking(ads) {
-    const sorted = Object.keys(ads).map(k => ({name:k, ...ads[k]})).sort((a,b) => b.y1 - a.y1);
+    let sorted = Object.keys(ads).map(k => ({name:k, ...ads[k]})).sort((a,b) => b.y1 - a.y1);
+
+    // Filtro Vista: GANADOS (y2===0 y y1>0) / PERDIDOS (y1===0 y y2>0)
+    if (selVista === 'GANADOS') {
+        sorted = sorted.filter(a => a.y1 > 0 && a.y2 === 0);
+    } else if (selVista === 'PERDIDOS') {
+        sorted = sorted.filter(a => a.y1 === 0 && a.y2 > 0).sort((a,b) => b.y2 - a.y2);
+    }
     let s1 = 0, s2 = 0; sorted.forEach(x => { s1 += x.y1; s2 += x.y2; });
     totalV1.innerText = fmt(s1); totalV2.innerText = fmt(s2);
     const diff = s1 - s2, perc = s2 ? (diff/s2)*100 : 0;
