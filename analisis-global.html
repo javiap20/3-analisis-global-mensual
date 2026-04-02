@@ -531,12 +531,17 @@ function renderRankings(dataBase, dataComp) {
     document.getElementById("listRankBase").innerHTML = topBase.map(([name, data], index) => {
         const valComp = statsComp[name]?.total || 0;
         let pctHtml = "";
+        let vsHtml = "";
 
         if (dataComp.length > 0) {
             if (valComp > 0) {
                 const diffPct = Math.round(((data.total / valComp) - 1) * 100);
+                const diff = data.total - valComp;
                 const color = diffPct < 0 ? 'var(--neg)' : 'var(--diffColor)';
                 pctHtml = `<span class="rank-pct" style="color:${color}">${diffPct > 0 ? '+' : ''}${diffPct}%</span>`;
+                const diffLabel = diff >= 0 ? 'Ganancia' : 'Pérdida';
+                const diffColor = diff >= 0 ? 'var(--diffColor)' : 'var(--neg)';
+                vsHtml = `<div style="font-size:0.7em; color:${diffColor}; margin-top:3px; text-align:right; font-weight:600;">${diffLabel}: ${diff >= 0 ? '+' : ''}${formatCurrency(diff)}</div>`;
             } else {
                 pctHtml = `<span class="rank-pct" style="color:#fff; font-size: 0.65em; background: #059669; padding: 2px 5px; border-radius: 4px;">NUEVO</span>`;
             }
@@ -547,29 +552,39 @@ function renderRankings(dataBase, dataComp) {
                     ${index+1}. ${name} <br> 
                     <span style="font-size: 0.75em; color: #ffffff; opacity: 0.7; font-weight: normal; margin-left: 15px; display: block;">(${data.allFamilies})</span>
                   </span>
-                  <div class="rank-value" style="color: #ffffff; padding-top: 2px;">${formatCurrency(data.total)} ${pctHtml}</div>
+                  <div style="text-align:right; padding-top: 2px;">
+                    <div class="rank-value" style="color: #ffffff;">${formatCurrency(data.total)} ${pctHtml}</div>
+                    ${vsHtml}
+                  </div>
                 </li>`;
     }).join("");
 
-    // 2. SEGUNDA COLUMNA: Fugas y Caídas
+    // 2. SEGUNDA COLUMNA: Fugas y Caídas — ordenadas por mayor pérdida absoluta
     const listCompFiltered = Object.entries(statsComp)
         .filter(([name, data]) => {
             if (topBaseNames.includes(name)) return false;
             const valBase = statsBase[name]?.total || 0;
             return valBase < data.total; 
         })
-        .sort((a,b) => b[1].total - a[1].total)
+        .map(([name, data]) => {
+            const valBase = statsBase[name]?.total || 0;
+            const loss = data.total - valBase; // pérdida absoluta (positivo = hemos perdido esto)
+            return [name, data, valBase, loss];
+        })
+        .sort((a, b) => b[3] - a[3]) // ordenar por mayor pérdida absoluta
         .slice(0, 25);
 
-    document.getElementById("listRankComp").innerHTML = listCompFiltered.map(([name, data], index) => {
-        const valBase = statsBase[name]?.total || 0;
+    document.getElementById("listRankComp").innerHTML = listCompFiltered.map(([name, data, valBase, loss], index) => {
         let labelHtml = "";
+        let vsHtml = "";
 
         if (valBase === 0) {
             labelHtml = `<span class="rank-pct" style="color:#fff; font-size: 0.65em; background: #991b1b; padding: 2px 5px; border-radius: 4px;">FUGA</span>`;
+            vsHtml = `<div style="font-size:0.7em; color:#94a3b8; margin-top:3px; text-align:right;">0€ vs ${formatCurrency(data.total)}</div>`;
         } else {
             const diffPct = Math.round(((valBase / data.total) - 1) * 100);
             labelHtml = `<span class="rank-pct" style="color:var(--neg)">${diffPct}%</span>`;
+            vsHtml = `<div style="font-size:0.7em; color:#94a3b8; margin-top:3px; text-align:right;">${formatCurrency(valBase)} vs ${formatCurrency(data.total)}</div>`;
         }
 
         return `<li class="rank-item" style="align-items: flex-start; margin-bottom: 12px;">
@@ -577,7 +592,10 @@ function renderRankings(dataBase, dataComp) {
                     ${index+1}. ${name} <br> 
                     <span style="font-size: 0.75em; color: #ffffff; opacity: 0.7; font-weight: normal; margin-left: 15px; display: block;">(${data.allFamilies})</span>
                   </span>
-                  <div class="rank-value" style="color: #ffffff; padding-top: 2px;">${formatCurrency(data.total)} ${labelHtml}</div>
+                  <div style="text-align:right; padding-top: 2px;">
+                    <div class="rank-value" style="color: var(--neg);">-${formatCurrency(loss)} ${labelHtml}</div>
+                    ${vsHtml}
+                  </div>
                 </li>`;
     }).join("");
 }
