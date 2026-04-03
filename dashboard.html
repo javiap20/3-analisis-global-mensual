@@ -98,7 +98,7 @@ body {
 .channel-tab .tab-count { font-size: 10px; background: var(--bg3); border-radius: 4px; padding: 1px 6px; margin-left: 6px; font-family: 'DM Mono', monospace; color: var(--text3); }
 .channel-tab.active .tab-count { background: rgba(37,99,235,0.1); color: var(--accent); }
 
-/* YEAR BAR — propio bloque entre tabs y filtros */
+/* YEAR BAR */
 .year-bar {
   background: var(--bg2); border-bottom: 2px solid var(--border2);
   padding: 10px 28px; display: flex; align-items: center; gap: 16px;
@@ -133,7 +133,7 @@ body {
 .btn-clear { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
 .btn-clear:hover { background: #fecaca; }
 
-/* CHIP MULTI-FILTER — táctil, funciona en iPad */
+/* CHIP MULTI-FILTER */
 .chip-filter { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .chip-filter label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); font-weight: 500; }
 .chip-box {
@@ -273,6 +273,33 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
 .anun-row-sub td { padding: 7px 10px; border-bottom: 1px solid #e0e2e8; font-size: 11px; background: #ffffff; color: #111122; }
 .anun-row-sub td.td-left { padding-left: 42px; }
 
+/* ── PERDIDOS — Opción A: borde izquierdo rojo + fondo tenue ── */
+.row-perdido td {
+  background: #fff5f5 !important;
+  color: #501313 !important;
+}
+.row-perdido td:first-child {
+  border-left: 3px solid #E24B4A;
+  padding-left: 7px !important;
+}
+.row-perdido:hover td { background: #ffe8e8 !important; }
+.row-perdido .anun-toggle-icon {
+  background: rgba(226,75,74,0.18) !important;
+  color: #A32D2D !important;
+}
+
+/* sub-filas perdidas dentro de un anunciante (marcas/productos perdidos) */
+.row-perdido-sub td {
+  background: #fff5f5 !important;
+  color: #7f1d1d !important;
+  font-style: italic;
+}
+.row-perdido-sub td:first-child {
+  border-left: 3px solid #E24B4A;
+  padding-left: 7px !important;
+}
+.row-perdido-sub:hover td { background: #ffe8e8 !important; }
+
 /* DELTA */
 .delta-pos { color: #15803d; font-weight: 700; font-size: 11px; font-family: 'DM Mono', monospace; }
 .delta-neg { color: #991b1b; font-weight: 700; font-size: 11px; font-family: 'DM Mono', monospace; }
@@ -379,7 +406,7 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
     <div class="channel-tab" data-ch="EVENTOS" onclick="setChannel(this)">Eventos <span class="tab-count" id="cnt-eventos">—</span></div>
   </div>
 
-  <!-- AÑO — bloque propio entre tabs y filtros -->
+  <!-- AÑO -->
   <div class="year-bar">
     <div class="year-bar-label">Año</div>
     <select class="year-bar-select" id="f-year" onchange="render()">
@@ -393,7 +420,6 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
 
   <!-- FILTROS -->
   <div class="filters-wrap">
-    <!-- Bloque 1: Mes, Área, Sector, Familia, Publicación — chips táctiles -->
     <div class="filters-row">
       <div class="chip-filter">
         <label>Mes</label>
@@ -419,7 +445,6 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
 
     <div class="filters-divider"></div>
 
-    <!-- Bloque 2: Anunciante, Estado, Comercial, Situación, Limpiar -->
     <div class="filters-row">
       <div class="filter-group">
         <label>Anunciante</label>
@@ -448,7 +473,7 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
   </div>
 
   <div class="main">
-    <!-- KPIs: Ingresos, Anunc.totales, Ganados, Perdidos, Ingreso medio, Comerciales, Activaciones -->
+    <!-- KPIs -->
     <div class="kpi-grid">
       <div class="kpi-card" style="--kpi-color:var(--accent)">
         <div class="kpi-label">Ingresos netos</div>
@@ -487,7 +512,7 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
       </div>
     </div>
 
-    <!-- ROW 1: TIMELINE + TOP ANUNCIANTES (full width each) -->
+    <!-- ROW 1 -->
     <div class="charts-row">
       <div class="chart-card">
         <div class="chart-title">Ingresos por mes <span id="timeline-sub"></span>
@@ -503,7 +528,7 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
       </div>
     </div>
 
-    <!-- ROW 2: MIX CANAL + DISTRIBUCIÓN ÁREA + TOP PUBLICACIONES -->
+    <!-- ROW 2 -->
     <div class="charts-row-3">
       <div class="chart-card" id="canal-card">
         <div class="chart-title">Mix canal
@@ -528,7 +553,7 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
       </div>
     </div>
 
-    <!-- ROW 3: FAMILIAS + TOP SECTORES + COMERCIALES -->
+    <!-- ROW 3 -->
     <div class="charts-row-3">
       <div class="chart-card">
         <div class="chart-title">Familias
@@ -550,7 +575,7 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
       </div>
     </div>
 
-    <!-- MODAL POPUP -->
+    <!-- MODAL -->
     <div class="chart-modal-overlay" id="chart-modal-overlay" onclick="closeChartModal(event)">
       <div class="chart-modal">
         <div class="chart-modal-header">
@@ -561,7 +586,7 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
       </div>
     </div>
 
-    <!-- TABLA DETALLE AGRUPADA -->
+    <!-- TABLA DETALLE -->
     <div class="chart-card">
       <div class="chart-title">
         Detalle de inserciones
@@ -657,20 +682,30 @@ function fmtComercial(s) {
   const cap = w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
   return parts.length === 1 ? cap(parts[0]) : cap(parts[0]) + ' ' + cap(parts[1]);
 }
-// Format with full thousands separator (5000 → 5.000 €)
 function fmtFull(n) {
   if (n === null || n === undefined || isNaN(n)) return '—';
-  return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 }).format(n) + '€';
+  return new Intl.NumberFormat('es-ES', { 
+    maximumFractionDigits: 0, 
+    useGrouping: true 
+  }).format(n) + '€';
 }
-// Short format for KPIs/charts
+
 function fmtK(n) {
   if (n >= 1e6) return (n/1e6).toFixed(1).replace('.',',') + 'M €';
-  if (n >= 1e3) return new Intl.NumberFormat('es-ES',{maximumFractionDigits:0}).format(Math.round(n)) + '€';
-  return new Intl.NumberFormat('es-ES',{maximumFractionDigits:0}).format(Math.round(n)) + ' €';
+  return new Intl.NumberFormat('es-ES', { 
+    maximumFractionDigits: 0, 
+    useGrouping: true 
+  }).format(Math.round(n)) + '€';
 }
-// Full format for avg (no abbreviation)
+
 function fmtAvg(n) {
-  return new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 }).format(n) + '€';
+  return new Intl.NumberFormat('es-ES', { 
+    maximumFractionDigits: 0, 
+    useGrouping: true 
+  }).format(n) + '€';
+}
+function fmtNum(n) {
+  return new Intl.NumberFormat('es-ES', { useGrouping: true }).format(n);
 }
 
 // ─── LOAD ─────────────────────────────────────────────────────────────────────
@@ -747,8 +782,6 @@ async function loadExcel() {
 function getChannelData() {
   return activeChannel === 'GLOBAL' ? DATA : DATA.filter(r => r._canal === activeChannel);
 }
-// ─── CHIP FILTER STATE ────────────────────────────────────────────────────────
-// Stores selected values for each multi-filter. Empty set = "Todos"
 const chipState = {
   mes:     new Set(),
   area:    new Set(),
@@ -758,7 +791,6 @@ const chipState = {
 };
 
 function getSelected(key) {
-  // key is like 'f-mes' → strip 'f-'
   const k = key.replace('f-', '');
   const s = chipState[k];
   return (!s || s.size === 0) ? ['all'] : [...s];
@@ -766,38 +798,28 @@ function getSelected(key) {
 
 function toggleChip(key, val) {
   const s = chipState[key];
-  if (val === 'all') {
-    s.clear();
-  } else {
-    if (s.has(val)) s.delete(val);
-    else s.add(val);
-  }
+  if (val === 'all') { s.clear(); }
+  else { if (s.has(val)) s.delete(val); else s.add(val); }
   renderChips(key);
   render();
 }
 
 function renderChips(key) {
-  const containerId = 'chips-' + key;
-  const container = document.getElementById(containerId);
+  const container = document.getElementById('chips-' + key);
   if (!container) return;
   const s = chipState[key];
   const allSelected = s.size === 0;
   container.querySelectorAll('.chip').forEach(ch => {
     const v = ch.dataset.val;
-    if (v === 'all') {
-      ch.classList.toggle('active', allSelected);
-    } else {
-      ch.classList.toggle('active', s.has(v));
-    }
+    if (v === 'all') ch.classList.toggle('active', allSelected);
+    else ch.classList.toggle('active', s.has(v));
   });
 }
 
 function buildChips(key, vals, labelFn) {
-  const containerId = 'chips-' + key;
-  const container = document.getElementById(containerId);
+  const container = document.getElementById('chips-' + key);
   if (!container) return;
   const s = chipState[key];
-  // Remove values no longer in data (keep existing selection if still valid)
   const validVals = new Set(vals);
   [...s].forEach(v => { if (!validVals.has(v)) s.delete(v); });
   const allSelected = s.size === 0;
@@ -810,7 +832,6 @@ function buildChips(key, vals, labelFn) {
   container.innerHTML = html;
 }
 
-// Aplica todos los filtros menos el año — helper interno
 function _applyNonYearFilters(rows) {
   const meses = getSelected('f-mes');
   const areas = getSelected('f-area');
@@ -833,7 +854,6 @@ function _applyNonYearFilters(rows) {
   });
 }
 
-// Devuelve datos filtrados del año actual con todos los filtros
 function getFiltered() {
   const base = getChannelData();
   const yr   = document.getElementById('f-year').value;
@@ -841,19 +861,16 @@ function getFiltered() {
   const filtered = _applyNonYearFilters(byYear);
   const estado = document.getElementById('f-estado-anun').value;
   if (estado === 'all') return filtered;
-
-  // Para ganados/perdidos necesitamos comparar con año anterior (sin recursión)
   if (yr === 'all') return filtered;
   const prevYear = String(parseInt(yr) - 1);
   const prevBase = _applyNonYearFilters(base.filter(r => r._yearRaw === prevYear));
   const curAnuns  = new Set(filtered.map(r => (r[COL_ANUN]||'').trim()));
   const prevAnuns = new Set(prevBase.map(r => (r[COL_ANUN]||'').trim()));
   if (estado === 'ganados')  return filtered.filter(r => !prevAnuns.has((r[COL_ANUN]||'').trim()));
-  if (estado === 'perdidos') return []; // los perdidos no tienen filas en el año actual
+  if (estado === 'perdidos') return [];
   return filtered;
 }
 
-// Devuelve datos filtrados del año ANTERIOR con los mismos filtros no-año
 function getPrevFiltered(yr) {
   if (yr === 'all') return [];
   const prevYear = String(parseInt(yr) - 1);
@@ -861,7 +878,6 @@ function getPrevFiltered(yr) {
   return _applyNonYearFilters(base.filter(r => r._yearRaw === prevYear));
 }
 
-// Calcula ganados/perdidos SIN llamar a getFiltered (evita recursión)
 function calcGanPerd(yr, curFiltered) {
   if (yr === 'all' || !curFiltered) return { nuevosSet: null, perdidosSet: null };
   const prevRows = getPrevFiltered(yr);
@@ -898,8 +914,6 @@ function populateFilters() {
   const coms   = new Set(base.map(r=>(r[COL_COM]||'').trim()).filter(Boolean));
   const sits   = new Set(base.map(r=>(r[COL_SIT]||'').trim()).filter(Boolean));
 
-  // Year: ONLY rebuild if not yet populated (first load or channel change)
-  // We detect this by checking if the select has only the default "Todos" option
   const yrSel = document.getElementById('f-year');
   if (yrSel.options.length <= 1) {
     [...years].sort().forEach(v => {
@@ -909,11 +923,8 @@ function populateFilters() {
     });
   }
 
-  // Mes chips en orden cronológico
   const mesOrdenados = MESES_ORDER.filter(m => meses.has(m));
   buildChips('mes', mesOrdenados, v => MESES_SHORT[v] || v);
-
-  // Resto de chips
   buildChips('area',    areas,  null);
   buildChips('sector',  sects,  null);
   buildChips('familia', fams,   null);
@@ -924,7 +935,6 @@ function populateFilters() {
   fillSingle('f-sit',  sits,  'Todas');
 }
 
-// Called only on channel change to force-repopulate year select
 function repopulateYear() {
   const base = getChannelData();
   const years = new Set(base.map(r=>r._yearRaw).filter(Boolean));
@@ -952,7 +962,6 @@ function setChannel(el) {
   render();
 }
 function updateTabCounts() {
-  // For tab counts: apply all current filters but ignore channel filter, then split by canal
   const yr    = document.getElementById('f-year').value;
   const meses = getSelected('f-mes');
   const areas = getSelected('f-area');
@@ -983,14 +992,12 @@ function updateTabCounts() {
 }
 function sortTable(col) {
   if (sortCol === col) sortAsc = !sortAsc; else { sortCol = col; sortAsc = false; }
-  // Update header arrows
   document.getElementById('th-ingreso').textContent = 'Ingreso neto ' + (sortCol==='ingreso' ? (sortAsc?'↑':'↓') : '↕');
   document.getElementById('th-delta').textContent   = '% vs año ant. ' + (sortCol==='delta'   ? (sortAsc?'↑':'↓') : '↕');
   renderTable(getFiltered(), document.getElementById('f-year').value);
 }
 
 // ─── TABLE ────────────────────────────────────────────────────────────────────
-// Delegated click handler — handles both anunciante and marca toggle rows
 document.addEventListener('click', function(e) {
   const row = e.target.closest('tr[data-toggle-anun]');
   if (!row) return;
@@ -1000,14 +1007,7 @@ document.addEventListener('click', function(e) {
   renderTable(getFiltered(), document.getElementById('f-year').value);
 });
 
-function toggleAnun(anunName) {
-  if (expandedAnuns.has(anunName)) expandedAnuns.delete(anunName);
-  else expandedAnuns.add(anunName);
-  renderTable(getFiltered(), document.getElementById('f-year').value);
-}
-
 function renderTable(data, yearSel) {
-  // Build filter-aware prev-year maps using getPrevFiltered
   let prevYearMap = null;
   let nuevosSet = new Set(), perdidosSet = new Set();
 
@@ -1024,7 +1024,6 @@ function renderTable(data, yearSel) {
     prevAnuns.forEach(a => { if (!curAnuns.has(a))  perdidosSet.add(a); });
   }
 
-  // Group by anunciante
   const anunMap = new Map();
   data.forEach(r => {
     const anun = (r[COL_ANUN]||'').trim();
@@ -1035,11 +1034,9 @@ function renderTable(data, yearSel) {
   });
   let anunList = [...anunMap.entries()].map(([anun,val])=>({ anun,...val }));
 
-  // Sort by ingreso or delta %
   if (sortCol === 'delta' && prevYearMap) {
     anunList.sort((a, b) => {
       const pA = prevYearMap.get(a.anun), pB = prevYearMap.get(b.anun);
-      // Nuevos (sin prev) van al final; perdidos no aparecen aquí
       const dA = (pA && pA > 0) ? ((a.ingreso - pA) / pA) : (sortAsc ? -Infinity : Infinity);
       const dB = (pB && pB > 0) ? ((b.ingreso - pB) / pB) : (sortAsc ? -Infinity : Infinity);
       return sortAsc ? dA - dB : dB - dA;
@@ -1048,7 +1045,6 @@ function renderTable(data, yearSel) {
     anunList.sort((a, b) => sortAsc ? a.ingreso - b.ingreso : b.ingreso - a.ingreso);
   }
 
-  // Perdidos (from filter-aware prevYearMap)
   let perdidoList = [];
   const estadoFilter = document.getElementById('f-estado-anun').value;
   if (yearSel !== 'all' && prevYearMap && estadoFilter !== 'ganados') {
@@ -1061,7 +1057,7 @@ function renderTable(data, yearSel) {
   document.getElementById('tabla-count-msg').textContent =
     `${anunList.length} anunciantes` + (perdidoList.length ? ` · ${perdidoList.length} perdidos` : '');
 
-  const NCOLS = 9; // total columns now (with Producto)
+  const NCOLS = 9;
   const tbody = document.getElementById('tabla-body');
   if (!anunList.length && !perdidoList.length) {
     tbody.innerHTML = `<tr><td colspan="${NCOLS}" class="empty-state">Sin datos para los filtros seleccionados</td></tr>`;
@@ -1075,7 +1071,6 @@ function renderTable(data, yearSel) {
     const isNuevo    = nuevosSet.has(anun);
     const ingresoAnt = prevYearMap ? (prevYearMap.get(anun) ?? null) : null;
 
-    // Delta cell for anunciante header
     let deltaHtml = '<td>—</td>';
     if (prevYearMap !== null) {
       if (isNuevo || ingresoAnt === null || ingresoAnt === 0) {
@@ -1090,15 +1085,13 @@ function renderTable(data, yearSel) {
       }
     }
 
-    // Derive summary info from rows
-    const pubMap={}, secMap={}, areaMap={}, canalMap={}, comMap={}, prodMap={};
+    const pubMap={}, secMap={}, areaMap={}, canalMap={}, comMap={};
     rows.forEach(r => {
       const p=(r._pubNorm||''); pubMap[p]=(pubMap[p]||0)+r._ingreso;
       const s=(r._sectorClean||''); secMap[s]=(secMap[s]||0)+1;
       const a=(r[COL_AREA]||'').trim(); areaMap[a]=(areaMap[a]||0)+1;
       const c=(r._canal||''); canalMap[c]=(canalMap[c]||0)+r._ingreso;
       const co=fmtComercial(r[COL_COM]); comMap[co]=(comMap[co]||0)+r._ingreso;
-      const pr=(r[COL_PROD]||'').trim(); if(pr) prodMap[pr]=(prodMap[pr]||0)+r._ingreso;
     });
     const topPub    = Object.entries(pubMap).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
     const topSector = Object.entries(secMap).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
@@ -1128,7 +1121,6 @@ function renderTable(data, yearSel) {
     </tr>`;
 
     if (isExpanded) {
-      // Build filter-aware prev marca map for this anunciante
       let prevMarcaMap = null;
       if (yearSel !== 'all') {
         const prevRows = getPrevFiltered(yearSel);
@@ -1139,7 +1131,6 @@ function renderTable(data, yearSel) {
         });
       }
 
-      // Group by marca
       const marcaMap = new Map();
       rows.forEach(r => {
         const marca = (r[COL_MARCA]||'').trim() || '(sin marca)';
@@ -1190,19 +1181,17 @@ function renderTable(data, yearSel) {
         </tr>`;
 
         if (isMarcaExpanded) {
-          // Build filter-aware prev producto map for this marca
           let prevProdMap = null;
           if (yearSel !== 'all') {
             const prevRows = getPrevFiltered(yearSel);
             prevProdMap = new Map();
             prevRows.filter(r => (r[COL_ANUN]||'').trim() === anun && ((r[COL_MARCA]||'').trim()||'(sin marca)') === marca).forEach(r => {
               const pr = (r[COL_PROD]||'').trim() || '(sin producto)';
-              if (!prevProdMap.has(pr)) prevProdMap.set(pr, { ingreso:0, pubs:new Set(), coms:new Set() });
+              if (!prevProdMap.has(pr)) prevProdMap.set(pr, { ingreso:0 });
               prevProdMap.get(pr).ingreso += r._ingreso;
             });
           }
 
-          // Group by producto
           const prodMap2 = new Map();
           mRows.forEach(r => {
             const prod = (r[COL_PROD]||'').trim() || '(sin producto)';
@@ -1246,19 +1235,19 @@ function renderTable(data, yearSel) {
             </tr>`;
           });
 
-          // Productos perdidos (en año ant pero no en este, filter-aware)
+          // Productos perdidos
           if (prevProdMap) {
             const curProds = new Set(prodList.map(p=>p.prod));
             prevProdMap.forEach((pPrev, prod) => {
               if (!curProds.has(prod)) {
-                html += `<tr class="anun-row-sub" style="opacity:0.6;background:#fff8f8">
+                html += `<tr class="anun-row-sub row-perdido-sub">
                   <td class="td-left" style="padding-left:52px;font-size:11px">
-                    <span style="color:var(--text3);font-style:italic">↳↳ ${prod}</span>
+                    <span>↳↳ ${prod}</span>
                     <span class="badge-perdido" style="margin-left:6px;font-size:9px">PERDIDO</span>
                   </td>
-                  <td colspan="4" style="font-size:11px;color:var(--text3);font-style:italic">— no aparece este año —</td>
+                  <td colspan="4" style="font-size:11px">— no aparece este año —</td>
                   <td></td>
-                  <td class="num" style="color:var(--text3);font-size:11px">${fmtFull(pPrev.ingreso)} <span style="font-size:9px">(año ant.)</span></td>
+                  <td class="num" style="font-size:11px">${fmtFull(pPrev.ingreso)} <span style="font-size:9px">(año ant.)</span></td>
                   <td><span class="badge-perdido">PERDIDO</span></td>
                 </tr>`;
               }
@@ -1267,12 +1256,11 @@ function renderTable(data, yearSel) {
         }
       });
 
-      // Marcas perdidas (filter-aware)
+      // Marcas perdidas
       if (prevMarcaMap) {
         const curMarcas = new Set(marcaList.map(m=>m.marca));
         prevMarcaMap.forEach((ing, marca) => {
           if (!curMarcas.has(marca)) {
-            // Get prev productos for this lost marca
             const prevRows = getPrevFiltered(yearSel);
             const lostProdMap = new Map();
             prevRows.filter(r => (r[COL_ANUN]||'').trim()===anun && ((r[COL_MARCA]||'').trim()||'(sin marca)')===marca).forEach(r=>{
@@ -1284,15 +1272,15 @@ function renderTable(data, yearSel) {
             });
             const lostProdsStr = [...lostProdMap.values()].sort((a,b)=>b.ingreso-a.ingreso)
               .slice(0,3).map(x=>`${x.prod} (${x.pub})`).join('; ');
-            html += `<tr class="anun-row-sub" style="opacity:0.6;background:#fff8f8">
+            html += `<tr class="anun-row-sub row-perdido-sub">
               <td class="td-left">
-                <span style="color:var(--text3);font-style:italic;padding-left:24px">↳ ${marca}</span>
+                <span style="padding-left:24px">↳ ${marca}</span>
                 <span class="badge-perdido" style="margin-left:6px">PERDIDO</span>
               </td>
-              <td style="font-size:10px;color:var(--text3);font-style:italic" colspan="2">${lostProdsStr}</td>
-              <td colspan="2" style="font-size:11px;color:var(--text3);font-style:italic">— no aparece este año —</td>
+              <td style="font-size:10px" colspan="2">${lostProdsStr}</td>
+              <td colspan="2" style="font-size:11px">— no aparece este año —</td>
               <td></td>
-              <td class="num" style="color:var(--text3);font-size:11px">${fmtFull(ing)} <span style="font-size:9px">(año ant.)</span></td>
+              <td class="num" style="font-size:11px">${fmtFull(ing)} <span style="font-size:9px">(año ant.)</span></td>
               <td><span class="badge-perdido">PERDIDO</span></td>
             </tr>`;
           }
@@ -1301,21 +1289,21 @@ function renderTable(data, yearSel) {
     }
   });
 
-  // Anunciantes perdidos al final — expandibles con detalle del año anterior
+  // Anunciantes perdidos al final
   perdidoList.forEach(({ anun, ingresoAnt }) => {
     const perdidoKey = '__perdido__' + anun;
     const isPerdidoExpanded = expandedAnuns.has(perdidoKey);
     const safeKey = encodeURIComponent(perdidoKey);
-    html += `<tr class="anun-row-header" data-toggle-anun="${safeKey}" style="cursor:pointer;opacity:0.7;background:rgba(220,38,38,0.04)">
+    html += `<tr class="anun-row-header row-perdido" data-toggle-anun="${safeKey}" style="cursor:pointer">
       <td class="td-left">
         <div style="display:flex;align-items:center">
-          <span class="anun-toggle-icon" style="background:rgba(220,38,38,0.12);color:var(--coral)">${isPerdidoExpanded?'▲':'▼'}</span>
-          <span style="color:var(--text2)">${anun}</span>
+          <span class="anun-toggle-icon">${isPerdidoExpanded?'▲':'▼'}</span>
+          <span style="font-weight:600">${anun}</span>
           <span class="badge-perdido" style="margin-left:8px">PERDIDO</span>
         </div>
       </td>
-      <td colspan="5" style="font-size:11px;color:var(--text3);font-style:italic">— no aparece en el año seleccionado —</td>
-      <td class="num" style="color:var(--text3)">${fmtFull(ingresoAnt)} <span style="font-size:9px">(año ant.)</span></td>
+      <td colspan="5" style="font-size:11px;font-style:italic">— no aparece en el año seleccionado —</td>
+      <td class="num">${fmtFull(ingresoAnt)} <span style="font-size:9px">(año ant.)</span></td>
       <td><span class="badge-perdido">PERDIDO</span></td>
     </tr>`;
 
@@ -1336,19 +1324,19 @@ function renderTable(data, yearSel) {
         const prods2 = [...new Set(mRows.map(r=>(r[COL_PROD]||'').trim()).filter(Boolean))];
         const mCanal2 = mRows.reduce((best,r)=>(!best||r._ingreso>best._ingreso?r:best),null)?._canal||'';
         const mCom2   = fmtComercial(mRows.sort((a,b)=>b._ingreso-a._ingreso)[0]?.[COL_COM]||'');
-        html += `<tr class="anun-row-sub" style="opacity:0.65;background:rgba(220,38,38,0.02)">
+        html += `<tr class="anun-row-sub row-perdido-sub">
           <td class="td-left">
-            <span style="color:var(--text3);font-style:italic;padding-left:24px">↳ ${marca}</span>
+            <span style="padding-left:24px">↳ ${marca}</span>
             <span class="badge-perdido" style="margin-left:6px;font-size:9px">PERDIDO</span>
-            <span style="font-size:10px;color:var(--text3);margin-left:6px">${mRows.length} ins. año ant.</span>
+            <span style="font-size:10px;margin-left:6px">${mRows.length} ins. año ant.</span>
           </td>
-          <td style="font-size:11px;color:var(--text3)">${pubs2.slice(0,3).join(', ')}${pubs2.length>3?' +':''}</td>
-          <td style="font-size:11px;color:var(--text3)">${prods2.slice(0,2).join(', ')}${prods2.length>2?' +':''}</td>
-          <td style="font-size:11px;color:var(--text3)">${mRows[0]?._sectorClean||''}</td>
-          <td style="font-size:11px;color:var(--text3)">${(mRows[0]?.[COL_AREA]||'').trim()}</td>
-          <td><span class="pill ${CANAL_PILL[mCanal2]||'pill-blue'}" style="font-size:9px;opacity:0.7">${mCanal2}</span></td>
-          <td style="font-size:11px;color:var(--text3)">${mCom2}</td>
-          <td class="num" style="color:var(--text3);font-size:11px">${fmtFull(mIng)} <span style="font-size:9px">(año ant.)</span></td>
+          <td style="font-size:11px">${pubs2.slice(0,3).join(', ')}${pubs2.length>3?' +':''}</td>
+          <td style="font-size:11px">${prods2.slice(0,2).join(', ')}${prods2.length>2?' +':''}</td>
+          <td style="font-size:11px">${mRows[0]?._sectorClean||''}</td>
+          <td style="font-size:11px">${(mRows[0]?.[COL_AREA]||'').trim()}</td>
+          <td><span class="pill ${CANAL_PILL[mCanal2]||'pill-blue'}" style="font-size:9px">${mCanal2}</span></td>
+          <td style="font-size:11px">${mCom2}</td>
+          <td class="num" style="font-size:11px">${fmtFull(mIng)} <span style="font-size:9px">(año ant.)</span></td>
           <td><span class="badge-perdido">PERDIDO</span></td>
         </tr>`;
       });
@@ -1366,16 +1354,13 @@ function render() {
   const total  = filt.reduce((s,r) => s+r._ingreso, 0);
   const yr     = document.getElementById('f-year').value;
 
-  // Year display (big)
   const yd = document.getElementById('year-display');
   if (yr === 'all') { yd.textContent = 'todos los años'; yd.className = 'year-display-big all-years'; }
   else              { yd.textContent = yr;               yd.className = 'year-display-big'; }
 
-  // Prev year filtered data (same filters, year-1)
   const prevFilt = yr !== 'all' ? getPrevFiltered(yr) : [];
   const prevTotal = prevFilt.reduce((s,r) => s+r._ingreso, 0);
 
-  // Ingresos KPI + delta vs año ant (filter-aware)
   const { nuevosSet, perdidosSet } = calcGanPerd(yr, filt);
   let ingDeltaHtml = '';
   if (yr !== 'all' && prevTotal > 0) {
@@ -1387,15 +1372,12 @@ function render() {
   document.getElementById('kpi-ing').textContent = fmtK(total);
   document.getElementById('kpi-ing-sub').innerHTML = ingDeltaHtml || fmtFull(total);
 
-  // Anunciantes
   const anunSet = new Set(filt.map(r=>(r[COL_ANUN]||'').trim()));
-  document.getElementById('kpi-anun').textContent = anunSet.size;
-
-  // Ganados / Perdidos (filter-aware)
-  if (nuevosSet) {
-    document.getElementById('kpi-ganados').textContent  = nuevosSet.size;
+  document.getElementById('kpi-anun').textContent = fmtNum(anunSet.size);
+if (nuevosSet) {
+    document.getElementById('kpi-ganados').textContent = fmtNum(nuevosSet.size);
     document.getElementById('kpi-ganados-sub').textContent = 'vs ' + (parseInt(yr)-1);
-    document.getElementById('kpi-perdidos').textContent  = perdidosSet.size;
+    document.getElementById('kpi-perdidos').textContent = fmtNum(perdidosSet.size);
     document.getElementById('kpi-perdidos-sub').textContent = 'vs ' + (parseInt(yr)-1);
   } else {
     document.getElementById('kpi-ganados').textContent  = '—';
@@ -1404,16 +1386,13 @@ function render() {
     document.getElementById('kpi-perdidos-sub').textContent = 'selecciona un año';
   }
 
-  // Ingreso medio — cifra completa con separador de miles
   document.getElementById('kpi-avg').textContent = filt.length ? fmtAvg(Math.round(total/filt.length)) : '—';
   document.getElementById('kpi-avg-sub').textContent = 'por inserción';
 
-  // Comerciales
   const coms = new Set(filt.map(r=>(r[COL_COM]||'').trim())).size;
-  document.getElementById('kpi-com').textContent = coms;
+  document.getElementById('kpi-com').textContent = coms.toLocaleString('es-ES');
   document.getElementById('kpi-com-sub').textContent = '';
 
-  // Activaciones (= inserciones) con delta filter-aware
   const acts = filt.length;
   const prevActs = prevFilt.length;
   let actDeltaHtml = '';
@@ -1423,7 +1402,7 @@ function render() {
     const cls  = pct >= 0 ? 'up' : 'down';
     actDeltaHtml = ` <span class="kpi-delta ${cls}" style="font-size:10px">${sign}${pct.toFixed(1)}%</span>`;
   }
-  document.getElementById('kpi-act').innerHTML = acts.toLocaleString('es-ES') + actDeltaHtml;
+  document.getElementById('kpi-act').innerHTML = new Intl.NumberFormat('es-ES', { useGrouping: true }).format(acts) + actDeltaHtml;
   document.getElementById('kpi-act-sub').textContent = 'inserciones totales';
 
   const prevFiltForCharts = yr !== 'all' ? getPrevFiltered(yr) : [];
@@ -1460,7 +1439,6 @@ function renderBars(id, data, colorFn, limit=30, prevData=null) {
   const top = data.slice(0, limit);
   if (!top.length) { el.innerHTML='<div class="empty-state">Sin datos</div>'; return; }
   const max = Math.max(...top.map(d=>d.v));
-  // Build prev map
   const prevMap = new Map();
   if (prevData) prevData.forEach(d => prevMap.set(d.k, d.v));
   el.innerHTML = top.map((d,i) => {
@@ -1549,7 +1527,6 @@ const MODAL_TITLES = {
   'donut':       'Mix canal'
 };
 
-// Render bars with FULL numbers for modal
 function renderBarsModal(data, colorFn, prevData) {
   if (!data.length) return '<div class="empty-state">Sin datos</div>';
   const max = Math.max(...data.map(d=>d.v));
@@ -1579,7 +1556,6 @@ function renderBarsModal(data, colorFn, prevData) {
   }).join('');
 }
 
-// Render timeline with full numbers for modal
 function renderTimelineModal(filt, prevFilt) {
   const byMes = {}; MESES_ORDER.forEach(m=>byMes[m]=0);
   filt.forEach(r=>{ if(r._mesRaw && byMes[r._mesRaw]!==undefined) byMes[r._mesRaw]+=r._ingreso; });
@@ -1676,7 +1652,6 @@ function closeChartModal(e) {
   document.body.style.overflow = '';
 }
 
-// Close on Escape key
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChartModal(); });
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
