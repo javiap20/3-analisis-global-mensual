@@ -176,6 +176,202 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
     font-weight: bold; 
 }
 
+/* ===== BLOQUE RESUMEN ESTÁTICO ===== */
+#static-overview {
+    display: none;
+    margin-bottom: 30px;
+}
+.static-overview-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-left: 4px solid #818cf8;
+    padding-left: 12px;
+    margin-bottom: 6px;
+    margin-top: 30px;
+}
+.static-note {
+    font-size: 0.72rem;
+    color: #64748b;
+    margin-bottom: 18px;
+    padding-left: 16px;
+    font-style: italic;
+}
+.static-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.static-grid-full {
+    grid-column: 1 / -1;
+}
+.static-card {
+    background: rgba(17,24,39,0.95);
+    border: 1px solid #1e293b;
+    border-radius: 14px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+}
+.static-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #818cf8, #38bdf8);
+}
+.static-card-title {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #818cf8;
+    margin-bottom: 14px;
+}
+.static-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: rgba(129,140,248,0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(129,140,248,0.2);
+    margin-bottom: 8px;
+}
+.static-total-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+.static-total-val {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    text-align: right;
+}
+.static-sub-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 8px 12px 8px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+}
+.static-sub-row:hover { background: rgba(255,255,255,0.03); }
+.static-sub-label {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    flex: 1;
+    padding-right: 10px;
+    line-height: 1.3;
+}
+.static-sub-label em {
+    font-style: normal;
+    font-size: 0.7em;
+    color: #64748b;
+    display: block;
+    margin-top: 2px;
+}
+.static-sub-vals {
+    text-align: right;
+    flex-shrink: 0;
+}
+.static-sub-val {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+.static-diff {
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: block;
+    margin-top: 2px;
+}
+.static-diff.pos { color: #6ee7b7; }
+.static-diff.neg { color: #f87171; }
+
+/* Mini donut/bar chart area */
+.static-chart-area {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #1e293b;
+}
+.static-chart-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+.bar-chart-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.bar-label {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    width: 130px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: capitalize;
+}
+.bar-track {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+}
+.bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.bar-pct {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    width: 36px;
+    text-align: right;
+    flex-shrink: 0;
+}
+/* Publications card — full width with chart on the side, 50/50 */
+.pub-card-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+.pub-list-col { min-width: 0; }
+.pub-chart-col { 
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.static-legend-note {
+    margin: 10px 0 4px 0;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #475569;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    color: #94a3b8;
+    line-height: 1.5;
+}
+.static-legend-note .note-pos { color: #6ee7b7; font-weight: 700; }
+.static-legend-note .note-neg { color: #f87171; font-weight: 700; }
+
+/* ===== FIN BLOQUE RESUMEN ESTÁTICO ===== */
+
 /* Selector de tipo (Digital / Print / Eventos) */
 .type-selector-wrap {
     display: flex;
@@ -292,6 +488,50 @@ h1 { text-align: center; font-size: 1.5rem; margin: 20px 0; }
     </div>
   </div>
 
+
+<!-- ===== BLOQUE RESUMEN ESTÁTICO ===== -->
+<div id="static-overview">
+    <div class="static-overview-title">📊 Resumen Global de Ingresos</div>
+    <p class="static-note">⚠️ Este bloque respeta la selección de meses, pero no se ve afectado por los filtros de site, sector, familia, área ni comercial. Solo cambia al modificar el año base, el año de comparación o los meses seleccionados.</p>
+
+    <div class="static-grid">
+        <!-- CAJA ÁREAS -->
+        <div class="static-card" id="static-areas-card">
+            <div class="static-card-title">🗺️ Ingresos por Área</div>
+            <div id="static-areas-list"></div>
+            <div class="static-legend-note" id="static-areas-note" style="display:none"></div>
+            <div class="static-chart-area">
+                <div class="static-chart-title">Peso de cada área sobre el total</div>
+                <div id="static-areas-chart"></div>
+            </div>
+        </div>
+
+        <!-- CAJA FAMILIAS -->
+        <div class="static-card" id="static-families-card">
+            <div class="static-card-title">🏷️ Ingresos por Familia</div>
+            <div id="static-families-list"></div>
+            <div class="static-legend-note" id="static-families-note" style="display:none"></div>
+            <div class="static-chart-area">
+                <div class="static-chart-title">Peso de cada familia sobre el total (Programática agrupada)</div>
+                <div id="static-families-chart"></div>
+            </div>
+        </div>
+
+        <!-- CAJA PUBLICACIONES (full width) -->
+        <div class="static-card static-grid-full" id="static-sites-card">
+            <div class="static-card-title">📰 Ingresos por Publicación</div>
+            <div class="pub-card-inner">
+                <div class="pub-list-col" id="static-sites-list"></div>
+                <div class="pub-chart-col">
+                    <div class="static-chart-title" style="margin-top:0">Peso de cada publicación — barras</div>
+                    <div id="static-sites-chart"></div>
+                    <div id="static-sites-danger"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ===== FIN BLOQUE RESUMEN ESTÁTICO ===== -->
 
 <div id="rankingMainTitle" class="section-title" style="display:none; border-left: 4px solid #fde047; margin-bottom: 5px; font-size: 1.1rem; color: #fde047; text-transform: uppercase;">
   RANKING ANUNCIANTES: TOTAL FACTURACIÓN
@@ -729,12 +969,349 @@ function render(){
 
   const sRankings = document.getElementById("sectorRankings");
   if (sRankings) sRankings.style.display = "block";
+
+  renderStaticOverview();
 runIAAnalysis(mixBase, mixComp, y1, y2);
 }
 
 
 
 
+
+function renderStaticOverview() {
+    const y1 = fYear.value;
+    const y2 = fYear2.value;
+    const hasComp = y2 !== "Sin comparar";
+
+    // Months DO affect this block — read selected months from both selectors
+    const m1 = Array.from(document.getElementById("monthsBase").querySelectorAll("input:checked")).map(c => c.value);
+    const m2 = Array.from(document.getElementById("monthsComp").querySelectorAll("input:checked")).map(c => c.value);
+
+    // Filter by year + months only (no other filters)
+    const allBase = rawData.filter(d =>
+        (y1 === "Todos" || d.Año === y1) &&
+        (m1.length === 0 || m1.includes(d.Mes))
+    );
+    const allComp = hasComp ? rawData.filter(d =>
+        d.Año === y2 &&
+        (m2.length === 0 || m2.includes(d.Mes))
+    ) : [];
+
+    const sumBy = (arr, key) => arr.reduce((acc, d) => {
+        const k = d[key] || "(Sin especificar)";
+        acc[k] = (acc[k] || 0) + d.ingreso;
+        return acc;
+    }, {});
+
+    const totalBase = allBase.reduce((s, d) => s + d.ingreso, 0);
+    const totalComp = allComp.reduce((s, d) => s + d.ingreso, 0);
+
+    // Palette for bar charts
+    const PALETTE = ["#818cf8","#38bdf8","#6ee7b7","#fbbf24","#f472b6","#a78bfa","#34d399","#fb923c","#60a5fa","#e879f9",
+                     "#4ade80","#facc15","#f87171","#c084fc","#2dd4bf","#f97316","#84cc16","#a3e635","#22d3ee","#fb7185"];
+
+    const fmtDiff = (base, comp) => {
+        if (!hasComp || comp === 0) return "";
+        const pct = Math.round(((base / comp) - 1) * 100);
+        const abs = base - comp;
+        const cls = pct < 0 ? "neg" : "pos";
+        const sign = pct > 0 ? "+" : "";
+        return `<span class="static-diff ${cls}">${sign}${pct}% (${abs >= 0 ? "+" : ""}${formatCurrency(abs)})</span>`;
+    };
+
+    const fmtDiffRaw = (base, comp) => {
+        if (!hasComp || comp === 0) return { pct: 0, abs: 0, cls: "" };
+        const pct = Math.round(((base / comp) - 1) * 100);
+        const abs = base - comp;
+        return { pct, abs, cls: pct < 0 ? "neg" : "pos", sign: pct > 0 ? "+" : "" };
+    };
+
+    const yearLabel = (y) => y === "Todos" ? "Todos los años" : y;
+
+    // ===================== ÁREAS =====================
+    const AREA_INTERNACIONAL = "Internacional";
+    const AREA_PROGRAMATICA  = "Programática";
+    const AREAS_MADRID  = ["Brand Experience","Client Experience Lifestyle","Client Experience Lujo"];
+    const AREA_BCN      = "Client Experience Barcelona";
+
+    const areaBase = sumBy(allBase, "Area");
+    const areaComp = hasComp ? sumBy(allComp, "Area") : {};
+
+    const excl = (arr, excludedAreas) => arr.filter(d => !excludedAreas.includes(d.Area));
+
+    // totalPct: % de variación del TOTAL (base vs comp). Se usa para destacar filas peores que el total.
+    const totalPct = (hasComp && totalComp > 0) ? Math.round(((totalBase / totalComp) - 1) * 100) : null;
+
+    const buildSubRow = (label, hint, baseVal, compVal, highlightIfWorse = false) => {
+        const d = fmtDiffRaw(baseVal, compVal);
+        const isWorse = highlightIfWorse && hasComp && totalPct !== null && d.pct < totalPct;
+        const rowStyle = isWorse ? ' style="border-left:3px solid #f59e0b;"' : '';
+        const worseBadge = isWorse ? `<span style="font-size:0.6rem;background:#78350f;color:#fcd34d;padding:1px 5px;border-radius:3px;margin-left:6px;font-weight:700;vertical-align:middle;">▼ por debajo del total</span>` : '';
+        const diffHtml = hasComp ? `<span class="static-diff ${d.cls}">${d.sign}${d.pct}% (${d.abs >= 0 ? "+" : ""}${formatCurrency(d.abs)})</span>` : "";
+        return `<div class="static-sub-row"${rowStyle}>
+            <div class="static-sub-label">${label}${worseBadge}<em>${hint}</em></div>
+            <div class="static-sub-vals">
+                <div class="static-sub-val">${formatCurrency(baseVal)}${hasComp ? ` <span style="font-size:0.7em;color:#64748b">/ ${formatCurrency(compVal)}</span>` : ""}</div>
+                ${diffHtml}
+            </div>
+        </div>`;
+    };
+
+    const excluirAreaBase = (names) => names.reduce((s, n) => s + (areaBase[n] || 0), 0);
+    const excluirAreaComp = (names) => names.reduce((s, n) => s + (areaComp[n] || 0), 0);
+
+    const areaRowsBase = [
+        buildSubRow("Sin Internacional", `Excluye: ${AREA_INTERNACIONAL}`,
+            totalBase - (areaBase[AREA_INTERNACIONAL] || 0),
+            totalComp - (areaComp[AREA_INTERNACIONAL] || 0), true
+        ),
+        buildSubRow("Sin Madrid", `Excluye: ${AREAS_MADRID.join(", ")}`,
+            totalBase - excluirAreaBase(AREAS_MADRID),
+            totalComp - excluirAreaComp(AREAS_MADRID), true
+        ),
+        buildSubRow("Sin Barcelona", `Excluye: ${AREA_BCN}`,
+            totalBase - (areaBase[AREA_BCN] || 0),
+            totalComp - (areaComp[AREA_BCN] || 0), true
+        )
+    ];
+
+    const areaRows = currentType === "DIGITAL"
+        ? [...areaRowsBase, buildSubRow("Sin Programática", `Excluye área: ${AREA_PROGRAMATICA}`,
+            totalBase - (areaBase[AREA_PROGRAMATICA] || 0),
+            totalComp - (areaComp[AREA_PROGRAMATICA] || 0), true
+          )]
+        : [...areaRowsBase, buildSubRow("Sin Programática", `Excluye área: ${AREA_PROGRAMATICA}`,
+            totalBase - (areaBase[AREA_PROGRAMATICA] || 0),
+            totalComp - (areaComp[AREA_PROGRAMATICA] || 0), true
+          )];
+
+    document.getElementById("static-areas-list").innerHTML = `
+        <div class="static-total-row">
+            <div class="static-total-label">Total ingresos ${yearLabel(y1)}</div>
+            <div class="static-total-val">
+                ${formatCurrency(totalBase)}
+                ${hasComp ? `<span style="font-size:0.7em;color:#64748b;display:block"> vs ${formatCurrency(totalComp)} (${yearLabel(y2)})</span>` : ""}
+                ${fmtDiff(totalBase, totalComp)}
+            </div>
+        </div>
+        ${areaRows.join("")}`;
+
+    // Footnote for areas
+    if (hasComp) {
+        const totalPctStr = totalPct !== null ? `${totalPct > 0 ? "+" : ""}${totalPct}%` : "—";
+        const noteEl = document.getElementById("static-areas-note");
+        noteEl.style.display = "block";
+        noteEl.innerHTML = `ℹ️ <b>Cómo leer esto:</b> cada fila muestra qué pasaría con el total <em>si quitáramos ese área</em>. Si ese % es <strong>peor</strong> que el total global (${totalPctStr}), significa que esa área ha aportado más este año que el anterior y ha compensado bajadas en otras áreas. Las filas marcadas con <span style="background:#78350f;color:#fcd34d;padding:1px 5px;border-radius:3px;font-size:0.85em;font-weight:700;">▼ por debajo del total</span> son precisamente esas: áreas cuya aportación relativa este año ha sido clave para el resultado global.`;
+    }
+
+    // Area bar chart
+    const areaSorted = Object.entries(areaBase).sort((a, b) => b[1] - a[1]);
+    const areaChartHtml = areaSorted.map(([name, val], i) => {
+        const pct = totalBase > 0 ? ((val / totalBase) * 100).toFixed(1) : 0;
+        return `<div class="bar-chart-row">
+            <div class="bar-label" title="${name}">${name}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${PALETTE[i % PALETTE.length]}"></div></div>
+            <div class="bar-pct">${pct}%</div>
+        </div>`;
+    }).join("");
+    document.getElementById("static-areas-chart").innerHTML = areaChartHtml;
+
+    // ===================== FAMILIAS =====================
+    const FAM_SPONSORSHIP = "Sponsorship";
+    const FAM_RRSS        = "Social Networks";
+    const FAM_DISPLAY     = "Display";
+    const FAMS_PROG       = ["Programatica Display Directo","Programatica Display Indirecto","Programatico Directo Video","Programatico Indirecto"];
+    const FAM_CURATED     = "Curated";
+    const FAM_CONVENCIONAL = "Convencional";
+    const FAM_ELEM_ESP    = "Elementos Especiales";
+
+    const famBase = sumBy(allBase, "Family");
+    const famComp = hasComp ? sumBy(allComp, "Family") : {};
+
+    const excluirFamBase = (names) => names.reduce((s, n) => s + (famBase[n] || 0), 0);
+    const excluirFamComp = (names) => names.reduce((s, n) => s + (famComp[n] || 0), 0);
+
+    let famRows;
+    if (currentType === "DIGITAL") {
+        famRows = [
+            buildSubRow("Sin Sponsorship", `Excluye familia: ${FAM_SPONSORSHIP}`,
+                totalBase - (famBase[FAM_SPONSORSHIP] || 0),
+                totalComp - (famComp[FAM_SPONSORSHIP] || 0), true
+            ),
+            buildSubRow("Sin RRSS", `Excluye familia: ${FAM_RRSS}`,
+                totalBase - (famBase[FAM_RRSS] || 0),
+                totalComp - (famComp[FAM_RRSS] || 0), true
+            ),
+            buildSubRow("Sin Display", `Excluye familia: ${FAM_DISPLAY}`,
+                totalBase - (famBase[FAM_DISPLAY] || 0),
+                totalComp - (famComp[FAM_DISPLAY] || 0), true
+            ),
+            buildSubRow("Sin Programática", `Excluye: ${FAMS_PROG.join(", ")}`,
+                totalBase - excluirFamBase(FAMS_PROG),
+                totalComp - excluirFamComp(FAMS_PROG), true
+            )
+        ];
+    } else {
+        // PRINT y EVENTOS
+        famRows = [
+            buildSubRow("Sin Sponsorship", `Excluye familia: ${FAM_SPONSORSHIP}`,
+                totalBase - (famBase[FAM_SPONSORSHIP] || 0),
+                totalComp - (famComp[FAM_SPONSORSHIP] || 0), true
+            ),
+            buildSubRow("Sin Curated", `Excluye familia: ${FAM_CURATED}`,
+                totalBase - (famBase[FAM_CURATED] || 0),
+                totalComp - (famComp[FAM_CURATED] || 0), true
+            ),
+            buildSubRow("Sin Convencional", `Excluye familia: ${FAM_CONVENCIONAL}`,
+                totalBase - (famBase[FAM_CONVENCIONAL] || 0),
+                totalComp - (famComp[FAM_CONVENCIONAL] || 0), true
+            ),
+            buildSubRow("Sin Elementos Especiales", `Excluye familia: ${FAM_ELEM_ESP}`,
+                totalBase - (famBase[FAM_ELEM_ESP] || 0),
+                totalComp - (famComp[FAM_ELEM_ESP] || 0), true
+            )
+        ];
+    }
+
+    document.getElementById("static-families-list").innerHTML = `
+        <div class="static-total-row">
+            <div class="static-total-label">Total ingresos ${yearLabel(y1)}</div>
+            <div class="static-total-val">
+                ${formatCurrency(totalBase)}
+                ${hasComp ? `<span style="font-size:0.7em;color:#64748b;display:block"> vs ${formatCurrency(totalComp)} (${yearLabel(y2)})</span>` : ""}
+                ${fmtDiff(totalBase, totalComp)}
+            </div>
+        </div>
+        ${famRows.join("")}`;
+
+    // Footnote for families
+    if (hasComp) {
+        const totalPctStr = totalPct !== null ? `${totalPct > 0 ? "+" : ""}${totalPct}%` : "—";
+        const noteEl = document.getElementById("static-families-note");
+        noteEl.style.display = "block";
+        noteEl.innerHTML = `ℹ️ <b>Cómo leer esto:</b> cada fila muestra qué pasaría con el total <em>si quitáramos esa familia</em>. Si ese % es <strong>peor</strong> que el total global (${totalPctStr}), esa familia ha aportado más este año que el anterior y ha amortiguado la caída general. Las filas marcadas con <span style="background:#78350f;color:#fcd34d;padding:1px 5px;border-radius:3px;font-size:0.85em;font-weight:700;">▼ por debajo del total</span> son esas familias estratégicas cuya contribución relativa ha mejorado respecto al año comparado.`;
+    }
+
+    // Families bar chart — group programática
+    const famGrouped = {};
+    let progTotal = 0;
+    Object.entries(famBase).forEach(([k, v]) => {
+        if (FAMS_PROG.includes(k)) { progTotal += v; }
+        else { famGrouped[k] = v; }
+    });
+    if (progTotal > 0) famGrouped["Programática (agrupada)"] = progTotal;
+
+    const famSorted = Object.entries(famGrouped).sort((a, b) => b[1] - a[1]);
+    const famChartHtml = famSorted.map(([name, val], i) => {
+        const pct = totalBase > 0 ? ((val / totalBase) * 100).toFixed(1) : 0;
+        return `<div class="bar-chart-row">
+            <div class="bar-label" title="${name}">${name}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${PALETTE[i % PALETTE.length]}"></div></div>
+            <div class="bar-pct">${pct}%</div>
+        </div>`;
+    }).join("");
+    document.getElementById("static-families-chart").innerHTML = famChartHtml;
+
+    // ===================== PUBLICACIONES =====================
+    const siteBase = sumBy(allBase, "Site");
+    const siteComp = hasComp ? sumBy(allComp, "Site") : {};
+
+    const siteSorted = Object.entries(siteBase).sort((a, b) => b[1] - a[1]);
+
+    // Site names: lowercase for DIGITAL, capitalize first letter for PRINT/EVENTOS
+    const formatSiteName = (name) => {
+        if (currentType === "DIGITAL") return name; // already lowercase, keep as-is
+        return name.charAt(0).toUpperCase() + name.slice(1);
+    };
+
+    const siteSubRows = siteSorted.map(([name, val]) => {
+        const compVal = siteComp[name] || 0;
+        return buildSubRow(formatSiteName(name), "", val, compVal);
+    }).join("");
+
+    document.getElementById("static-sites-list").innerHTML = `
+        <div class="static-total-row">
+            <div class="static-total-label">Total ingresos ${yearLabel(y1)}</div>
+            <div class="static-total-val">
+                ${formatCurrency(totalBase)}
+                ${hasComp ? `<span style="font-size:0.7em;color:#64748b;display:block"> vs ${formatCurrency(totalComp)} (${yearLabel(y2)})</span>` : ""}
+                ${fmtDiff(totalBase, totalComp)}
+            </div>
+        </div>
+        ${siteSubRows}`;
+
+    const siteChartHtml = siteSorted.map(([name, val], i) => {
+        const pct = totalBase > 0 ? ((val / totalBase) * 100).toFixed(1) : 0;
+        return `<div class="bar-chart-row">
+            <div class="bar-label" title="${name}">${formatSiteName(name)}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${PALETTE[i % PALETTE.length]}"></div></div>
+            <div class="bar-pct">${pct}%</div>
+        </div>`;
+    }).join("");
+    document.getElementById("static-sites-chart").innerHTML = siteChartHtml;
+
+    // ⚠️ Tabla "Publicaciones en peligro" — las 3 con peor % vs año comparado
+    const dangerEl = document.getElementById("static-sites-danger");
+    if (dangerEl) {
+        if (hasComp && siteSorted.length > 0) {
+            // Calcular % variación por publicación
+            const withPct = siteSorted
+                .filter(([, val]) => val > 0)
+                .map(([name, val]) => {
+                    const comp = siteComp[name] || 0;
+                    const pct = comp > 0 ? Math.round(((val / comp) - 1) * 100) : null;
+                    return { name, val, comp, pct };
+                })
+                .filter(d => d.pct !== null)
+                .sort((a, b) => a.pct - b.pct); // peores primero
+
+            const top3worst = withPct.slice(0, 3);
+            const top3best  = withPct.slice().sort((a, b) => b.pct - a.pct).slice(0, 3);
+
+            const dangerRows = top3worst.map((d, i) => {
+                const medals = ["🥇","🥈","🥉"];
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size:0.75rem;color:#fca5a5;font-weight:600;">${medals[i]} ${formatSiteName(d.name)}</div>
+                    <div style="text-align:right;">
+                        <div style="font-size:0.78rem;font-weight:700;color:#f87171;">${d.pct}%</div>
+                        <div style="font-size:0.65rem;color:#64748b;">${formatCurrency(d.val)} vs ${formatCurrency(d.comp)}</div>
+                    </div>
+                </div>`;
+            }).join("");
+
+            const bestRows = top3best.map((d, i) => {
+                const medals = ["🥇","🥈","🥉"];
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size:0.75rem;color:#6ee7b7;font-weight:600;">${medals[i]} ${formatSiteName(d.name)}</div>
+                    <div style="text-align:right;">
+                        <div style="font-size:0.78rem;font-weight:700;color:#6ee7b7;">+${d.pct > 0 ? "" : ""}${d.pct}%</div>
+                        <div style="font-size:0.65rem;color:#64748b;">${formatCurrency(d.val)} vs ${formatCurrency(d.comp)}</div>
+                    </div>
+                </div>`;
+            }).join("");
+
+            dangerEl.innerHTML = `
+                <div style="margin-top:20px;padding-top:14px;border-top:1px solid #1e293b;">
+                    <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:#f87171;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                        <span style="background:#7f1d1d;padding:2px 7px;border-radius:4px;">⚠️ Publicaciones en peligro</span>
+                        <span style="color:#475569;font-size:0.6rem;">peor % vs ${yearLabel(y2)}</span>
+                    </div>
+                    ${dangerRows}
+                </div>
+                <div style="margin-top:16px;">
+                    <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:#6ee7b7;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                        <span style="background:#064e3b;padding:2px 7px;border-radius:4px;">🚀 Publicaciones estrella</span>
+                        <span style="color:#475569;font-size:0.6rem;">mejor % vs ${yearLabel(y2)}</span>
+                    </div>
+                    ${bestRows}
+                </div>`;
+        } else {
+            dangerEl.innerHTML = "";
+        }
+    }
+
+    document.getElementById("static-overview").style.display = "block";
+}
 
 function runIAAnalysis(dataBase, dataComp, y1, y2) {
     const container = document.getElementById("ia-analysis-container");
