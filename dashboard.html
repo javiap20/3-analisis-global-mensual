@@ -127,6 +127,7 @@ body {
 }
 .filter-group select:focus { border-color: var(--accent); }
 .filter-group select option { background: var(--bg2); color: var(--text); padding: 2px 4px; }
+.filter-group select optgroup { background: var(--bg3); color: var(--text3); font-style: normal; font-weight: 600; font-size: 11px; }
 .filter-hint { font-size: 10px; color: var(--text3); margin-top: 2px; }
 .btn { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text2); padding: 6px 14px; font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: 'DM Sans',sans-serif; }
 .btn:hover { border-color: var(--accent); color: var(--text); background: var(--bg4); }
@@ -359,91 +360,9 @@ html { scrollbar-width: thin; scrollbar-color: #9a9ab8 var(--bg4); }
   .charts-row, .charts-row-3 { grid-template-columns: 1fr; }
   .bar-row { grid-template-columns: 110px 1fr 65px 44px; }
 }
-
-/* ── NAV HEARST CON MÁXIMO AIRE INFERIOR ── */
-.hn-bar {
-  background: #020617; 
-  border-bottom: 1px solid #1e293b;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  /* Aumentamos el aire: 15px arriba y 30px abajo */
-  padding: 15px 20px 30px 20px; 
-}
-
-.hn-inner {
-  max-width: 1500px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center; 
-  gap: 5px;
-}
-
-.hn-link {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  font-size: 0.72rem; 
-  font-weight: 600;
-  color: #94a3b8;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.2s ease;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-/* ESTADO ACTIVO: COLOR CHAMPÁN */
-.hn-link.hn-active {
-  color: #fcd34d; 
-  font-weight: 800;
-}
-
-/* LÍNEA INFERIOR CORTA (ESTILO FOTO) */
-.hn-link.hn-active::after {
-  content: "";
-  position: absolute;
-  bottom: -5px; /* Un poco más de separación del texto */
-  left: 25%;    /* Más corta aún para que quede muy fina */
-  right: 25%;   
-  height: 2px;  
-  background-color: #fcd34d; 
-  border-radius: 2px;
-}
-
-.hn-sep {
-  width: 1px;
-  height: 14px;
-  background: #334155;
-  margin: 0 10px;
-  flex-shrink: 0;
-}
-
-/* AJUSTE EXTRA PARA EL TÍTULO DEL CUERPO */
-h1 {
-  margin-top: 40px !important; /* Empuja el contenido hacia abajo para que no pegue con el menú */
-}
-
-
 </style>
 </head>
 <body>
-
-
-<nav class="hn-bar" data-active="global-consulta">
-  <div class="hn-inner" id="hnInner">
-    <a class="hn-link" data-id="global-reporting"  href="analisis-global.html">Global (REporting)</a>
-    <a class="hn-link" data-id="marca"             href="analisis-por-marca.html">Marca Hearst</a>
-    <a class="hn-link" data-id="anunciante"        href="analisis-por-anunciante.html">Anunciantes</a>
-    <a class="hn-link" data-id="plataforma"        href="anunciantes-desglosados-por-canales.html">Anunciantes & Plataformas</a>
-    <a class="hn-link" data-id="comparativa"       href="comparativa.html">Anunciantes (Comparativa)</a>
-    <a class="hn-link" data-id="familia-producto"  href="digital-desglose-por-producto.html">Familia & Producto</a>
-    <a class="hn-link" data-id="global-consulta"   href="dashboard.html">Global (Consulta)</a>
-  </div>
-</nav>
-
 
 <!-- LOADING -->
 <div id="loading-screen">
@@ -531,6 +450,10 @@ h1 {
       <div class="filter-group">
         <label>Anunciante</label>
         <select id="f-anun" onchange="render()"><option value="all">Todos</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Producto <span style="font-size:9px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(ppto. medio neto)</span></label>
+        <select id="f-prod" onchange="render()" style="min-width:220px"><option value="all">Todos</option></select>
       </div>
       <div class="filter-group">
         <label>Estado anunciante</label>
@@ -921,8 +844,18 @@ function _applyNonYearFilters(rows) {
   const fams  = getSelected('f-familia');
   const pubs  = getSelected('f-pub');
   const anun  = document.getElementById('f-anun').value;
+  const prodSel = document.getElementById('f-prod') ? document.getElementById('f-prod').value : 'all';
   const com   = document.getElementById('f-com').value;
   const sit   = document.getElementById('f-sit').value;
+
+  // Parse product filter: "CANAL|||nombre_producto"
+  let filtProdCanal = null, filtProdNombre = null;
+  if (prodSel && prodSel !== 'all') {
+    const parts = prodSel.split('|||');
+    filtProdCanal  = parts[0] || null;
+    filtProdNombre = parts[1] || null;
+  }
+
   return rows.filter(r => {
     if (!meses.includes('all') && !meses.includes(r._mesRaw)) return false;
     if (!areas.includes('all') && !areas.includes((r[COL_AREA]||'').trim())) return false;
@@ -932,6 +865,10 @@ function _applyNonYearFilters(rows) {
     if (anun !== 'all' && (r[COL_ANUN]||'').trim() !== anun)     return false;
     if (com  !== 'all' && (r[COL_COM]||'').trim()  !== com)      return false;
     if (sit  !== 'all' && (r[COL_SIT]||'').trim()  !== sit)      return false;
+    if (filtProdNombre !== null) {
+      if ((r[COL_PROD]||'').trim() !== filtProdNombre) return false;
+      if (filtProdCanal && r._canal !== filtProdCanal)  return false;
+    }
     return true;
   });
 }
@@ -992,7 +929,6 @@ function populateFilters() {
   const sects  = new Set(base.map(r=>r._sectorClean).filter(Boolean));
   const fams   = new Set(base.map(r=>r._famLabel).filter(Boolean));
   const pubs   = new Set(base.map(r=>r._pubNorm).filter(Boolean));
-  const anuns  = new Set(base.map(r=>(r[COL_ANUN]||'').trim()).filter(Boolean));
   const coms   = new Set(base.map(r=>(r[COL_COM]||'').trim()).filter(Boolean));
   const sits   = new Set(base.map(r=>(r[COL_SIT]||'').trim()).filter(Boolean));
 
@@ -1012,9 +948,111 @@ function populateFilters() {
   buildChips('familia', fams,   null);
   buildChips('pub',     pubs,   null);
 
-  fillSingle('f-anun', anuns, 'Todos');
+  // ── Anunciante: ordenado por ingreso neto descendente ──────────────────────
+  {
+    const sel = document.getElementById('f-anun');
+    const cur = sel.value;
+    const anunIngMap = new Map();
+    base.forEach(r => {
+      const a = (r[COL_ANUN]||'').trim();
+      if (a) anunIngMap.set(a, (anunIngMap.get(a)||0) + r._ingreso);
+    });
+    const anunsSorted = [...anunIngMap.entries()]
+      .sort((a,b) => b[1] - a[1])
+      .map(([a]) => a);
+    sel.innerHTML = '<option value="all">Todos</option>';
+    anunsSorted.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
+    });
+    if (cur && cur !== 'all' && anunsSorted.includes(cur)) sel.value = cur;
+  }
+
+  // ── Producto: agrupado DIGITAL / PRINT, ordenado por presupuesto medio neto ─
+  fillProductFilter(base);
+
   fillSingle('f-com',  coms,  'Todos');
   fillSingle('f-sit',  sits,  'Todas');
+}
+
+// Calcula presupuesto medio neto para productos:
+// Promedio = ingreso neto total / líneas con importe distinto de 0
+// (excluye líneas en 0€ para no desvirtuar la media)
+function calcProductoAvgNeto(rows) {
+  const prodMap = new Map();
+  rows.forEach(r => {
+    if (r._ingreso === 0) return; // ignorar líneas con 0€
+    const prod = (r[COL_PROD] || '').trim() || '(sin producto)';
+    const k    = prod + '|||' + r._canal;
+    if (!prodMap.has(k)) prodMap.set(k, { prod, canal: r._canal, totalNeto: 0, lineas: 0 });
+    const p = prodMap.get(k);
+    p.totalNeto += r._ingreso;
+    p.lineas    += 1;
+  });
+  return [...prodMap.values()].map(p => ({
+    prod:    p.prod,
+    canal:   p.canal,
+    avgNeto: p.lineas > 0 ? p.totalNeto / p.lineas : 0
+  }));
+}
+
+function fillProductFilter(base) {
+  const sel = document.getElementById('f-prod');
+  if (!sel) return;
+  const cur = sel.value;
+
+  // Usar datos ya filtrados por año y filtros activos (igual que el resto del dashboard)
+  const yr       = document.getElementById('f-year').value;
+  const byYear   = yr === 'all' ? getChannelData() : getChannelData().filter(r => r._yearRaw === yr);
+  const filtered = _applyNonYearFilters(byYear);
+
+  // Respetar filtro de familia activo
+  const fams = getSelected('f-familia');
+  const sourceRows = fams.includes('all') ? filtered : filtered.filter(r => fams.includes(r._famLabel));
+
+  const prodData = calcProductoAvgNeto(sourceRows);
+
+  // Separar digital y print, filtrar avgNeto > 0, top 15 cada uno
+  const digital = prodData
+    .filter(p => p.canal === 'DIGITAL' && p.avgNeto > 0)
+    .sort((a,b) => b.avgNeto - a.avgNeto)
+    .slice(0, 15);
+  const print = prodData
+    .filter(p => p.canal === 'PRINT' && p.avgNeto > 0)
+    .sort((a,b) => b.avgNeto - a.avgNeto)
+    .slice(0, 15);
+
+  sel.innerHTML = '<option value="all">Todos</option>';
+
+  if (digital.length) {
+    const grp = document.createElement('optgroup');
+    grp.label = '▸ DIGITAL';
+    digital.forEach(p => {
+      const o = document.createElement('option');
+      o.value = 'DIGITAL|||' + p.prod;
+      o.textContent = p.prod + '  (' + fmtAvg(Math.round(p.avgNeto)) + ' / ins.)';
+      grp.appendChild(o);
+    });
+    sel.appendChild(grp);
+  }
+
+  if (print.length) {
+    const grp = document.createElement('optgroup');
+    grp.label = '▸ PRINT';
+    print.forEach(p => {
+      const o = document.createElement('option');
+      o.value = 'PRINT|||' + p.prod;
+      o.textContent = p.prod + '  (' + fmtAvg(Math.round(p.avgNeto)) + ' / ins.)';
+      grp.appendChild(o);
+    });
+    sel.appendChild(grp);
+  }
+
+  // Restaurar selección si sigue siendo válida
+  const allVals = [...sel.options].map(o=>o.value);
+  if (cur && cur !== 'all' && allVals.includes(cur)) sel.value = cur;
+  else sel.value = 'all';
 }
 
 function repopulateYear() {
@@ -1031,7 +1069,7 @@ function repopulateYear() {
 
 function resetFilters() {
   document.getElementById('f-year').value = 'all';
-  ['f-anun','f-com','f-sit','f-estado-anun'].forEach(id => document.getElementById(id).value = 'all');
+  ['f-anun','f-prod','f-com','f-sit','f-estado-anun'].forEach(id => { const el = document.getElementById(id); if (el) el.value = 'all'; });
   Object.keys(chipState).forEach(k => chipState[k].clear());
   ['mes','area','sector','familia','pub'].forEach(k => renderChips(k));
   render();
@@ -1468,8 +1506,40 @@ if (nuevosSet) {
     document.getElementById('kpi-perdidos-sub').textContent = 'selecciona un año';
   }
 
-  document.getElementById('kpi-avg').textContent = filt.length ? fmtAvg(Math.round(total/filt.length)) : '—';
-  document.getElementById('kpi-avg-sub').textContent = 'por inserción';
+(function() {
+  // Agrupar por (Anunciante + Marca + Pub + Producto) para detectar anulaciones
+  const netMap = new Map();
+  filt.forEach(r => {
+    const key = [
+      (r[COL_ANUN]  || '').trim(),
+      (r[COL_MARCA] || '').trim(),
+      (r._pubNorm   || '').trim(),
+      (r[COL_PROD]  || '').trim()
+    ].join('||');
+    if (!netMap.has(key)) netMap.set(key, []);
+    netMap.get(key).push(r._ingreso);
+  });
+
+  // Por cada grupo, cancelar pares opuestos y quedarse con las líneas supervivientes
+  let netTotal = 0, netCount = 0;
+  netMap.forEach(importes => {
+    const pos = importes.filter(v => v > 0).sort((a,b) => a - b);
+    const neg = importes.filter(v => v < 0).sort((a,b) => b - a); // más cercano a 0 primero
+    const usedPos = new Array(pos.length).fill(false);
+    const usedNeg = new Array(neg.length).fill(false);
+    // Cancelar pares exactos
+    pos.forEach((p, i) => {
+      const j = neg.findIndex((n, ni) => !usedNeg[ni] && Math.abs(n + p) < 0.01);
+      if (j !== -1) { usedPos[i] = true; usedNeg[j] = true; }
+    });
+    // Líneas supervivientes
+    pos.forEach((p, i) => { if (!usedPos[i]) { netTotal += p; netCount++; } });
+    neg.forEach((n, i) => { if (!usedNeg[i]) { netTotal += n; netCount++; } });
+  });
+
+  document.getElementById('kpi-avg').textContent     = netCount ? fmtAvg(Math.round(netTotal / netCount)) : '—';
+  document.getElementById('kpi-avg-sub').textContent = netCount ? `${netCount} líneas (neteadas)` : 'sin datos';
+})();
 
   const coms = new Set(filt.map(r=>(r[COL_COM]||'').trim())).size;
   document.getElementById('kpi-com').textContent = coms.toLocaleString('es-ES');
@@ -1738,17 +1808,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChartMo
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 loadExcel();
-
-(function(){
-  const nav = document.querySelector('.hn-bar');
-  if (!nav) return;
-  const active = nav.dataset.active;
-  const link = nav.querySelector(`[data-id="${active}"]`);
-  if (link) link.classList.add('hn-active');
-})();
-
-
-
 </script>
 </body>
 </html>
