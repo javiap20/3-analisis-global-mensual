@@ -296,20 +296,101 @@
 .type-btn.active-eventos  { border-color: #34d399; color: #34d399; background: rgba(52,211,153,0.08); }
 
 
+
+/* ── NAV HEARST CON MÁXIMO AIRE INFERIOR ── */
+.hn-bar {
+  background: #020617; 
+  border-bottom: 1px solid #1e293b;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  /* Aumentamos el aire: 15px arriba y 30px abajo */
+  padding: 15px 20px 30px 20px; 
+}
+
+.hn-inner {
+  max-width: 1500px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  gap: 5px;
+}
+
+.hn-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 0.72rem; 
+  font-weight: 600;
+  color: #94a3b8;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ESTADO ACTIVO: COLOR CHAMPÁN */
+.hn-link.hn-active {
+  color: #fcd34d; 
+  font-weight: 800;
+}
+
+/* LÍNEA INFERIOR CORTA (ESTILO FOTO) */
+.hn-link.hn-active::after {
+  content: "";
+  position: absolute;
+  bottom: -5px; /* Un poco más de separación del texto */
+  left: 25%;    /* Más corta aún para que quede muy fina */
+  right: 25%;   
+  height: 2px;  
+  background-color: #fcd34d; 
+  border-radius: 2px;
+}
+
+.hn-sep {
+  width: 1px;
+  height: 14px;
+  background: #334155;
+  margin: 0 10px;
+  flex-shrink: 0;
+}
+
+/* AJUSTE EXTRA PARA EL TÍTULO DEL CUERPO */
+h1 {
+  margin-top: 40px !important; /* Empuja el contenido hacia abajo para que no pegue con el menú */
+}
+
+
+
     </style>
 </head>
 
 <body>
 
 
+<nav class="hn-bar" data-active="comparativa">
+  <div class="hn-inner" id="hnInner">
+    <a class="hn-link" data-id="global-reporting"  href="analisis-global.html">Global (REporting)</a>
+    <a class="hn-link" data-id="marca"             href="analisis-por-marca.html">Marca Hearst</a>
+    <a class="hn-link" data-id="anunciante"        href="analisis-por-anunciante.html">Anunciantes</a>
+    <a class="hn-link" data-id="plataforma"        href="anunciantes-desglosados-por-canales.html">Anunciantes & Plataformas</a>
+    <a class="hn-link" data-id="comparativa"       href="comparativa.html">Anunciantes (Comparativa)</a>
+    <a class="hn-link" data-id="familia-producto"  href="digital-desglose-por-producto.html">Familia & Producto</a>
+    <a class="hn-link" data-id="global-consulta"   href="dashboard.html">Global (Consulta)</a>
+  </div>
+</nav>
 
-<h1 id="mainTitle">Comparativa eligiendo varios Anunciantes</h1>
 
 <div class="type-selector-wrap">
     <button class="type-btn" id="btnDigital"  onclick="selectType('DIGITAL')" >DIGITAL</button>
     <button class="type-btn" id="btnPrint"    onclick="selectType('PRINT')"   >PRINT</button>
     <button class="type-btn" id="btnEventos"  onclick="selectType('EVENTOS')" >EVENTOS</button>
 </div>
+
+<h1 id="mainTitle">Comparativa eligiendo varios Anunciantes</h1>
 
 <div class="container">
     <div class="card">
@@ -937,6 +1018,16 @@ function renderSectorBrandsGrouped(rows1, rows2, y2) {
     `;
     tbody.appendChild(tfr);
 }
+
+
+(function(){
+  const nav = document.querySelector('.hn-bar');
+  if (!nav) return;
+  const active = nav.dataset.active;
+  const link = nav.querySelector(`[data-id="${active}"]`);
+  if (link) link.classList.add('hn-active');
+})();
+
 
 </script>
 </body>
