@@ -77,6 +77,25 @@ body {
   min-height: calc(100vh - 56px);
   gap: 20px;
 }
+
+/* LOADING SPINNER */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px;
+}
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--bg4);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--text3); }
+
 .upload-zone {
   display: flex; flex-direction: column; align-items: center; gap: 14px;
   border: 1.5px dashed var(--border2); border-radius: 16px;
@@ -332,6 +351,14 @@ td.avg-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12
 
 .empty-state { text-align: center; color: var(--text3); padding: 40px; font-size: 13px; }
 
+/* SOURCE PILL */
+.source-pill {
+  font-size: 11px; padding: 3px 10px;
+  border-radius: 20px; font-family: 'DM Mono', monospace;
+}
+.source-pill.auto  { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.source-pill.manual { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg4); }
 ::-webkit-scrollbar-thumb { background: #9a9ab8; border-radius: 3px; }
@@ -342,12 +369,23 @@ td.avg-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-brand"><span class="dot"></span>Presupuestos Medios</div>
-  <div id="top-badge" class="data-badge" style="display:none">— registros</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="source-indicator" style="display:none"></span>
+    <div id="top-badge" class="data-badge" style="display:none">— registros</div>
+  </div>
 </div>
 
-<!-- UPLOAD -->
+<!-- UPLOAD / LOADING -->
 <div class="upload-wrap" id="upload-wrap">
-  <div class="upload-zone" id="upload-zone"
+
+  <!-- Spinner mientras se intenta la carga automática -->
+  <div class="loading-state" id="auto-loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Buscando archivo en el servidor…</div>
+  </div>
+
+  <!-- Zona manual: aparece si falla la auto-carga -->
+  <div class="upload-zone" id="upload-zone" style="display:none"
     onclick="document.getElementById('file-input').click()"
     ondragover="event.preventDefault();this.classList.add('drag')"
     ondragleave="this.classList.remove('drag')"
@@ -356,15 +394,14 @@ td.avg-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12
     <div class="up-title">Cargar Excel</div>
     <div class="up-sub">Arrastra tu <span class="mono" style="color:var(--text2)">PRINT Y DIGITAL.xlsx</span><br>o haz clic para buscarlo</div>
     <button class="up-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">Elegir archivo</button>
-    <div style="font-size:11px;color:var(--text3)" id="upload-msg"></div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px" id="upload-msg"></div>
   </div>
+
 </div>
 <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none" onchange="onFileInput(this)">
 
 <!-- CONTROLS -->
 <div id="controls">
-
-  <!-- BLOQUE 1: Año, Canal, Buscar, Ordenar + Toggle ceros -->
   <div class="filter-block">
     <div class="filter-block-title">Filtros principales</div>
     <div class="filters-row">
@@ -398,36 +435,24 @@ td.avg-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12
       <div class="filter-group">
         <label>Precio medio</label>
         <div class="zero-toggle-wrap">
-          <button class="zero-btn active" id="btn-con-ceros" onclick="setZeroMode('con')">
-            Con líneas a 0 €
-          </button>
-          <button class="zero-btn" id="btn-sin-ceros" onclick="setZeroMode('sin')">
-            Sin líneas a 0 €
-          </button>
+          <button class="zero-btn active" id="btn-con-ceros" onclick="setZeroMode('con')">Con líneas a 0 €</button>
+          <button class="zero-btn" id="btn-sin-ceros" onclick="setZeroMode('sin')">Sin líneas a 0 €</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- BLOQUE 2: Meses -->
   <div class="filter-block" style="border-bottom: 2px solid var(--border);">
     <div class="filter-block-title">Meses</div>
     <div class="months-row" id="months-row"></div>
   </div>
 
-  <!-- CONTENIDO -->
   <div class="main">
-
-    <!-- SUMMARY -->
     <div class="summary-bar" id="summary-bar"></div>
-
-    <!-- NOTE -->
     <div class="info-note hidden" id="info-note">
       <span class="info-icon">💡</span>
       <span id="info-text"></span>
     </div>
-
-    <!-- TABLE -->
     <div class="table-wrap">
       <div class="table-scroll">
         <table>
@@ -436,7 +461,6 @@ td.avg-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12
         </table>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -453,6 +477,13 @@ const COL_ING    = 'Imp.Neto a Comisionar';
 const COL_AREA   = 'ÁREAS';
 const SHEET_NAME = 'Analizador general';
 
+// ── Rutas a intentar en orden. Edita este array para añadir o cambiar nombres.
+const AUTO_LOAD_PATHS = [
+  'PRINT Y DIGITAL.xlsx',
+  'datos.xlsx',
+  'data.xlsx',
+];
+
 const MESES_ORDER = ['01 Enero','02 Febrero','03 Marzo','04 Abril','05 Mayo','06 Junio','07 Julio','08 Agosto','09 Septiembre','10 Octubre','11 Noviembre','12 Diciembre'];
 const MESES_SHORT = {'01 Enero':'Ene','02 Febrero':'Feb','03 Marzo':'Mar','04 Abril':'Abr','05 Mayo':'May','06 Junio':'Jun','07 Julio':'Jul','08 Agosto':'Ago','09 Septiembre':'Sep','10 Octubre':'Oct','11 Noviembre':'Nov','12 Diciembre':'Dic'};
 
@@ -461,8 +492,38 @@ const FAM_PRINT   = new Set(['CERTIFICACIÓN','CONVENCIONAL','Curated','ELEMENTO
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let DATA = [];
-let selectedMonths = new Set(); // vacío = todos
-let zeroMode = 'con'; // 'con' | 'sin'
+let selectedMonths = new Set();
+let zeroMode = 'con';
+
+// ─── AUTO-LOAD ────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  tryAutoLoad(AUTO_LOAD_PATHS.slice());
+});
+
+async function tryAutoLoad(paths) {
+  if (paths.length === 0) {
+    showManualUpload('Archivo no encontrado en el servidor.');
+    return;
+  }
+  const path = paths.shift();
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error('not ok');
+    // Rechazar si el servidor devuelve HTML (página de error 404 disfrazada)
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('text/html')) throw new Error('html response');
+    const buffer = await res.arrayBuffer();
+    processArrayBuffer(buffer, path, 'auto');
+  } catch (_) {
+    tryAutoLoad(paths);
+  }
+}
+
+function showManualUpload(msg) {
+  document.getElementById('auto-loading').style.display = 'none';
+  document.getElementById('upload-zone').style.display  = '';
+  if (msg) document.getElementById('upload-msg').textContent = msg;
+}
 
 // ─── CLASSIFY ─────────────────────────────────────────────────────────────────
 function classifyRow(row) {
@@ -491,7 +552,7 @@ function fmtNum(n) {
   return new Intl.NumberFormat('es-ES', { useGrouping: true }).format(n);
 }
 
-// ─── LOAD ─────────────────────────────────────────────────────────────────────
+// ─── FILE HANDLERS ────────────────────────────────────────────────────────────
 function onDrop(e) {
   e.preventDefault();
   document.getElementById('upload-zone').classList.remove('drag');
@@ -505,36 +566,49 @@ function onFileInput(input) {
 function processFile(file) {
   document.getElementById('upload-msg').textContent = `Leyendo ${file.name}…`;
   const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const wb = XLSX.read(e.target.result, { type: 'array' });
-      const sheetName = wb.SheetNames.includes(SHEET_NAME) ? SHEET_NAME : wb.SheetNames[0];
-      const raw = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
-      DATA = raw.map(row => ({
-        ...row,
-        _canal:   classifyRow(row),
-        _ingreso: parseFloat(row[COL_ING]) || 0,
-        _prod:    (row[COL_PROD] || '(sin producto)').trim(),
-        _fam:     (row[COL_FAM]  || '').trim(),
-        _year:    String(row[COL_YEAR] || '').trim(),
-        _mes:     String(row[COL_MES]  || '').trim(),
-      }));
-      document.getElementById('top-badge').style.display = '';
-      document.getElementById('top-badge').textContent = DATA.length.toLocaleString('es-ES') + ' registros · ' + file.name;
-      populateFilters();
-      document.getElementById('upload-wrap').style.display = 'none';
-      document.getElementById('controls').style.display = 'block';
-      renderTable();
-    } catch(err) {
+  reader.onload = e => processArrayBuffer(e.target.result, file.name, 'manual');
+  reader.readAsArrayBuffer(file);
+}
+
+function processArrayBuffer(buffer, fileName, source) {
+  try {
+    const wb = XLSX.read(buffer, { type: 'array' });
+    const sheetName = wb.SheetNames.includes(SHEET_NAME) ? SHEET_NAME : wb.SheetNames[0];
+    const raw = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
+    DATA = raw.map(row => ({
+      ...row,
+      _canal:   classifyRow(row),
+      _ingreso: parseFloat(row[COL_ING]) || 0,
+      _prod:    (row[COL_PROD] || '(sin producto)').trim(),
+      _fam:     (row[COL_FAM]  || '').trim(),
+      _year:    String(row[COL_YEAR] || '').trim(),
+      _mes:     String(row[COL_MES]  || '').trim(),
+    }));
+
+    document.getElementById('top-badge').style.display = '';
+    document.getElementById('top-badge').textContent = DATA.length.toLocaleString('es-ES') + ' registros · ' + fileName;
+
+    const ind = document.getElementById('source-indicator');
+    ind.style.display = '';
+    ind.innerHTML = source === 'auto'
+      ? '<span class="source-pill auto">⚡ Auto</span>'
+      : '<span class="source-pill manual">📂 Manual</span>';
+
+    populateFilters();
+    document.getElementById('upload-wrap').style.display = 'none';
+    document.getElementById('controls').style.display    = 'block';
+    renderTable();
+  } catch(err) {
+    if (source === 'auto') {
+      showManualUpload('Error al leer el archivo. Carga uno manualmente.');
+    } else {
       document.getElementById('upload-msg').textContent = 'Error: ' + err.message;
     }
-  };
-  reader.readAsArrayBuffer(file);
+  }
 }
 
 // ─── POPULATE ─────────────────────────────────────────────────────────────────
 function populateFilters() {
-  // Años
   const years = [...new Set(DATA.map(r => r._year).filter(Boolean))].sort();
   const yrSel = document.getElementById('f-year');
   yrSel.innerHTML = '<option value="all">Todos</option>';
@@ -543,8 +617,6 @@ function populateFilters() {
     o.value = y; o.textContent = y;
     yrSel.appendChild(o);
   });
-
-  // Meses como chips
   buildMonthChips();
 }
 
@@ -553,7 +625,6 @@ function buildMonthChips() {
   const meses = MESES_ORDER.filter(m => availableMeses.has(m));
   const container = document.getElementById('months-row');
   const allActive = selectedMonths.size === 0;
-
   let html = `<span class="month-chip chip-all ${allActive ? 'active' : ''}" onclick="toggleMonth('all')">Todos</span>`;
   meses.forEach(m => {
     const active = selectedMonths.has(m);
@@ -565,9 +636,8 @@ function buildMonthChips() {
 
 // ─── INTERACTIONS ─────────────────────────────────────────────────────────────
 function toggleMonth(mes) {
-  if (mes === 'all') {
-    selectedMonths.clear();
-  } else {
+  if (mes === 'all') selectedMonths.clear();
+  else {
     if (selectedMonths.has(mes)) selectedMonths.delete(mes);
     else selectedMonths.add(mes);
   }
@@ -600,7 +670,6 @@ function renderTable() {
   const search = document.getElementById('f-search').value.toLowerCase().trim();
   const sortBy = document.getElementById('f-sort').value;
 
-  // Agrupar por producto + canal
   const map = new Map();
   rows.forEach(r => {
     const key = r._prod + '|||' + r._canal;
@@ -618,24 +687,20 @@ function renderTable() {
 
   let items = [...map.values()].map(g => {
     const neto = g.sumaPos + g.sumaNeg;
-    // Precio medio CON ceros: neto / lineas_totales (incluye ceros)
     const avgCon  = g.lineas > 0 ? neto / g.lineas : 0;
-    // Precio medio SIN ceros: neto / (lineas_totales - ceros)
     const lineasSinCero = g.lineas - g.cero;
     const avgSin  = lineasSinCero > 0 ? neto / lineasSinCero : 0;
     return { ...g, neto, avgCon, avgSin };
   });
 
-  // Filtro búsqueda
   if (search) items = items.filter(g => g.prod.toLowerCase().includes(search));
 
-  // Ordenar
   const avg = g => zeroMode === 'con' ? g.avgCon : g.avgSin;
   if (sortBy === 'familia') {
     items.sort((a, b) => {
       const fa = a.fam || ''; const fb = b.fam || '';
       if (fa !== fb) return fa.localeCompare(fb);
-      return avg(b) - avg(a); // dentro de familia, por precio medio ↓
+      return avg(b) - avg(a);
     });
   } else if (sortBy === 'lineas') {
     items.sort((a, b) => b.lineas - a.lineas);
@@ -647,45 +712,27 @@ function renderTable() {
     items.sort((a, b) => a.prod.localeCompare(b.prod));
   }
 
-  // SUMMARY
   const totalLineas = items.reduce((s, g) => s + g.lineas, 0);
   const totalNeto   = items.reduce((s, g) => s + g.neto, 0);
   const totalCeros  = items.reduce((s, g) => s + g.cero, 0);
   document.getElementById('summary-bar').innerHTML = `
-    <div class="summary-card accent">
-      <div class="s-val">${items.length}</div>
-      <div class="s-label">productos distintos</div>
-    </div>
-    <div class="summary-card purple">
-      <div class="s-val">${fmtNum(totalLineas)}</div>
-      <div class="s-label">líneas totales</div>
-    </div>
-    <div class="summary-card green">
-      <div class="s-val">${fmt(totalNeto)}</div>
-      <div class="s-label">ingreso neto total</div>
-    </div>
-    <div class="summary-card amber">
-      <div class="s-val">${fmtNum(totalCeros)}</div>
-      <div class="s-label">líneas a 0 €</div>
-    </div>
+    <div class="summary-card accent"><div class="s-val">${items.length}</div><div class="s-label">productos distintos</div></div>
+    <div class="summary-card purple"><div class="s-val">${fmtNum(totalLineas)}</div><div class="s-label">líneas totales</div></div>
+    <div class="summary-card green"><div class="s-val">${fmt(totalNeto)}</div><div class="s-label">ingreso neto total</div></div>
+    <div class="summary-card amber"><div class="s-val">${fmtNum(totalCeros)}</div><div class="s-label">líneas a 0 €</div></div>
   `;
 
-  // NOTE
   const note = document.getElementById('info-note');
-  const noteText = document.getElementById('info-text');
   if (zeroMode === 'sin') {
     note.classList.remove('hidden');
-    noteText.innerHTML = '<strong>Modo activo: sin líneas a 0 €.</strong> El precio medio se calcula dividiendo el ingreso neto entre las líneas con valor distinto de 0 (positivas + negativas). Se muestra la columna "Líneas a 0 €" para mayor claridad.';
+    document.getElementById('info-text').innerHTML = '<strong>Modo activo: sin líneas a 0 €.</strong> El precio medio se calcula dividiendo el ingreso neto entre las líneas con valor distinto de 0 (positivas + negativas). Se muestra la columna "Líneas a 0 €" para mayor claridad.';
   } else {
     note.classList.add('hidden');
   }
 
-  // THEAD
   const showCeroCol = zeroMode === 'sin';
   document.getElementById('thead').innerHTML = `<tr>
-    <th>Producto</th>
-    <th>Canal</th>
-    <th>Familia</th>
+    <th>Producto</th><th>Canal</th><th>Familia</th>
     <th class="num">Líneas<br>totales</th>
     <th class="num" style="color:var(--green)">Líneas<br>positivas</th>
     <th class="num" style="color:var(--coral)">Líneas<br>negativas</th>
@@ -696,28 +743,23 @@ function renderTable() {
     <th class="num" style="color:var(--accent)">Precio medio${zeroMode === 'sin' ? '<br><span style="font-size:9px;font-weight:400">(sin 0 €)</span>' : '<br><span style="font-size:9px;font-weight:400">(con 0 €)</span>'}</th>
   </tr>`;
 
-  // TBODY
   const tbody = document.getElementById('tbody');
   if (!items.length) {
     tbody.innerHTML = `<tr><td colspan="${showCeroCol ? 11 : 10}" class="empty-state">Sin datos para los filtros seleccionados</td></tr>`;
     return;
   }
 
-  const canalClass = { DIGITAL: 'badge-D', PRINT: 'badge-P', EVENTOS: 'badge-E', OTROS: 'badge-O' };
+  const canalClass = { DIGITAL:'badge-D', PRINT:'badge-P', EVENTOS:'badge-E', OTROS:'badge-O' };
   let html = '';
   let currentFam = null;
   const byFamilia = sortBy === 'familia';
 
   items.forEach(g => {
-    // Separador de familia
     if (byFamilia && g.fam !== currentFam) {
       currentFam = g.fam;
-      const colSpan = showCeroCol ? 11 : 10;
-      html += `<tr class="family-header"><td colspan="${colSpan}">📁 ${g.fam || '(sin familia)'}</td></tr>`;
+      html += `<tr class="family-header"><td colspan="${showCeroCol ? 11 : 10}">📁 ${g.fam || '(sin familia)'}</td></tr>`;
     }
-
     const avgVal = zeroMode === 'con' ? g.avgCon : g.avgSin;
-
     html += `<tr>
       <td><strong>${g.prod}</strong></td>
       <td><span class="badge ${canalClass[g.canal] || 'badge-O'}">${g.canal}</span></td>
@@ -732,7 +774,6 @@ function renderTable() {
       <td class="avg-col">${fmt(avgVal)}</td>
     </tr>`;
   });
-
   tbody.innerHTML = html;
 }
 </script>
