@@ -8,11 +8,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e28;--bg4:#222736;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
-  --text:#e8eaf2;--text2:#c4c9dc;--text3:#8891ae;
-  --accent:#f5c842;--accent2:#e8b52e;
-  --red:#ff2d4e;--green:#3dd68c;--orange:#fb923c;
+  --bg:#f5f6f8;--bg2:#ffffff;--bg3:#f0f1f4;--bg4:#e4e6ed;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --text:#1a1d27;--text2:#4a4f66;--text3:#8891ae;
+  --accent:#d4960a;--accent2:#b87e08;
+  --red:#d91535;--green:#1a9e60;--orange:#d4600a;
   --radius:10px;--radius-lg:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -22,9 +22,13 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:var(--bg2);}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px;}
+html > body::-webkit-scrollbar{width:8px;}
+html > body::-webkit-scrollbar-track{background:#e0e2e8;}
+html > body::-webkit-scrollbar-thumb{background:#9098b0;border-radius:4px;}
+html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
 
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:200;background:rgba(13,15,20,0.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.topbar{position:sticky;top:0;z-index:200;background:rgba(245,246,248,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;}
 .brand{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;letter-spacing:-0.3px;display:flex;align-items:center;gap:10px;}
 .brand-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);}
 .top-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;}
@@ -36,7 +40,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
 .up-icon{font-size:40px;margin-bottom:12px;}
 .up-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px;}
 .up-sub{font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:20px;}
-.up-btn{background:var(--accent);color:#0d0f14;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;}
+.up-btn{background:var(--accent);color:#ffffff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;}
 .up-msg{font-size:11px;color:var(--text3);margin-top:10px;font-family:'DM Mono',monospace;}
 
 /* APP */
@@ -58,7 +62,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
 .ctrl-select:focus{border-color:var(--accent);}
 .year-arrow{font-size:18px;color:var(--text3);padding-bottom:9px;}
 .sep{width:1px;height:40px;background:var(--border2);align-self:flex-end;}
-.apply-btn{background:var(--accent);color:#0d0f14;border:none;border-radius:var(--radius);padding:10px 22px;font-size:13px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;transition:all 0.15s;margin-left:auto;align-self:flex-end;}
+.apply-btn{background:var(--accent);color:#ffffff;border:none;border-radius:var(--radius);padding:10px 22px;font-size:13px;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;transition:all 0.15s;margin-left:auto;align-self:flex-end;}
 .apply-btn:hover{background:var(--accent2);transform:translateY(-1px);}
 .apply-btn-inline{margin-left:0;align-self:center;flex-shrink:0;white-space:nowrap;}
 
@@ -68,7 +72,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
 .months-row{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding-bottom:4px;flex:1;}
 .m-chip{flex-shrink:0;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);user-select:none;transition:all 0.13s;white-space:nowrap;}
 .m-chip:active{transform:scale(0.96);}
-.m-chip.active{background:var(--accent);border-color:var(--accent);color:#0d0f14;font-weight:700;}
+.m-chip.active{background:var(--accent);border-color:var(--accent);color:#ffffff;font-weight:700;}
 .m-chip.all-chip.active{background:var(--bg4);border-color:var(--border2);color:var(--text);}
 
 /* DIVIDER */
@@ -165,19 +169,20 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
 .com-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
 .com-table{width:100%;border-collapse:collapse;}
 .com-table thead tr{background:var(--bg3);border-bottom:2px solid var(--border2);}
-.com-table th{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-weight:600;padding:9px 14px;text-align:left;white-space:nowrap;}
-.com-table th.num{text-align:right;}
+.com-table th{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-weight:600;padding:9px 14px;text-align:center;white-space:nowrap;}
+.com-table th:first-child{text-align:left;}
+.com-table th.num{text-align:center;}
 .com-table tbody tr{border-bottom:1px solid var(--border);transition:background 0.12s;}
 .com-table tbody tr:last-child{border-bottom:none;}
 .com-table tbody tr:hover{background:var(--bg3);}
 .com-table td{padding:8px 14px;font-size:12px;white-space:nowrap;}
 .com-td-name{font-weight:500;color:var(--text);}
-.com-td-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);text-align:right;}
-.com-td-pct{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-align:right;}
-.com-td-diff{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);text-align:right;}
-.com-cols{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.com-td-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);text-align:center;}
+.com-td-pct{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;text-align:center;}
+.com-td-diff{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);text-align:center;}
+.com-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;}
 .com-col{overflow-x:auto;}
-.com-col:first-child{border-right:1px solid var(--border);}
+.com-col:not(:last-child){border-right:1px solid var(--border);}
 
 /* B5 */
 .card-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
@@ -248,7 +253,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
   <div class="section">
     <div class="block-header">
       <span class="block-num">01</span>
-      <span class="block-title syne">Años y canal</span>
+      <span class="block-title syne">Años, Áreas y Canales</span>
     </div>
     <div class="years-card">
       <div class="year-group">
@@ -301,6 +306,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
       <span class="block-title syne">Rankings generales</span>
       <span class="block-sub">Primera fila = total · peor primero ↑</span>
     </div>
+    <p style="margin:0 0 12px;font-size:11px;color:var(--text3);font-style:italic;padding:0 2px;">
+      ℹ️ Datos reales del periodo seleccionado, ordenados de peor a mejor comportamiento respecto al año comparado. La primera fila de cada bloque muestra el total agregado.
+    </p>
     <div class="rankings-grid">
       <div class="ranking-card">
         <div class="ranking-card-header"><span>📰</span><span class="ranking-card-title">Publicaciones</span></div>
@@ -319,6 +327,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
         <div class="ranking-list" id="rk-familia"></div>
       </div>
     </div>
+
   </div>
 
   <div class="divider"></div>
@@ -327,7 +336,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
   <div class="section">
     <div class="block-header">
       <span class="block-num">04</span>
-      <span class="block-title syne">Top 20 peores</span>
+      <span class="block-title syne">Top 30 peores</span>
       <span class="block-sub">Ordenado por pérdida bruta · año base vs año comparado</span>
     </div>
     <div class="worst-grid">
@@ -345,7 +354,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
       </div>
       <div class="worst-card">
         <div class="worst-card-header">
-          <div class="worst-card-title">🔴 Peores presupuestos medios por producto</div>
+          <div class="worst-card-title">🔴 Peores presupuestos medios por Producto</div>
           <div class="worst-card-sub">PM = Ingreso neto ÷ nº líneas · por producto</div>
         </div>
         <div class="worst-col-labels">
@@ -357,7 +366,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
       </div>
       <div class="worst-card">
         <div class="worst-card-header">
-          <div class="worst-card-title">🔴 Peores presupuestos medios producto × site</div>
+          <div class="worst-card-title">🔴 Peores presupuestos medios por Producto y Publicación
           <div class="worst-card-sub">PM = Ingreso neto ÷ nº líneas · Producto × Publicación</div>
         </div>
         <div class="worst-col-labels">
@@ -372,12 +381,45 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
 
   <div class="divider"></div>
 
+  <!-- B04a: BC Global, todas las publicaciones -->
+  <div class="section">
+    <div class="block-header">
+      <span class="block-num">05</span>
+      <span class="block-title syne">Contenido · Peores presupuestos globales</span>
+      <span class="block-sub">Top 30 mínimos · todas las publicaciones · año base</span>
+    </div>
+    <div class="bc-grid" id="bca-grid">
+      <div class="bc-card">
+        <div class="bc-card-header"><span class="bc-card-icon">✍️</span><span class="bc-card-title">Branded Content</span></div>
+        <div class="bc-list" id="bca-0"><div class="bc-empty">Carga el Excel para ver datos</div></div>
+      </div>
+      <div class="bc-card">
+        <div class="bc-card-header"><span class="bc-card-icon">🎬</span><span class="bc-card-title">BC Video</span></div>
+        <div class="bc-list" id="bca-1"><div class="bc-empty">Carga el Excel para ver datos</div></div>
+      </div>
+      <div class="bc-card">
+        <div class="bc-card-header"><span class="bc-card-icon">📱</span><span class="bc-card-title">Social Networks</span></div>
+        <div class="bc-list" id="bca-2"><div class="bc-empty">Carga el Excel para ver datos</div></div>
+      </div>
+      <div class="bc-card">
+        <div class="bc-card-header"><span class="bc-card-icon">📄</span><span class="bc-card-title">Página Branded</span></div>
+        <div class="bc-list" id="bca-3"><div class="bc-empty">Carga el Excel para ver datos</div></div>
+      </div>
+      <div class="bc-card">
+        <div class="bc-card-header"><span class="bc-card-icon">📰</span><span class="bc-card-title">Doble Página Branded</span></div>
+        <div class="bc-list" id="bca-4"><div class="bc-empty">Carga el Excel para ver datos</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
   <!-- B04b -->
   <div class="section">
     <div class="block-header">
-      <span class="block-num">04b</span>
-      <span class="block-title syne">Branded Content · presupuestos más bajos por marca</span>
-      <span class="block-sub">Top 20 mínimos · año base</span>
+      <span class="block-num">06</span>
+      <span class="block-title syne">Contenido · Presupuestos más bajos por Publicación seleccionada</span>
+      <span class="block-sub">Top 30 mínimos · año base</span>
     </div>
     <div class="bc-header-bar">
       <span class="bc-pub-label">Publicación</span>
@@ -415,13 +457,14 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
   <!-- B04c -->
   <div class="section">
     <div class="block-header">
-      <span class="block-num">04c</span>
-      <span class="block-title syne">Comerciales · inserciones año base vs año comparado</span>
+      <span class="block-num">07</span>
+      <span class="block-title syne">Comerciales · inserciones Año base vs Año comparado</span>
       <span class="block-sub" id="com-hint"></span>
     </div>
     <div class="com-wrap">
       <div class="com-cols">
         <div class="com-col" id="com-col-left"></div>
+        <div class="com-col" id="com-col-mid"></div>
         <div class="com-col" id="com-col-right"></div>
       </div>
     </div>
@@ -432,7 +475,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
   <!-- B5 -->
   <div class="section">
     <div class="block-header">
-      <span class="block-num">05</span>
+      <span class="block-num">08</span>
       <span class="block-title syne">Anunciantes por publicación</span>
       <span class="block-sub">Toca una publicación para ver el detalle</span>
     </div>
@@ -441,7 +484,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
       <div class="pub-grid" id="pub-digital"></div>
       <div class="pub-section-label" style="border-top:1px solid var(--border)">📰 Print</div>
       <div class="pub-grid" id="pub-print"></div>
-      <div class="pub-section-label" style="border-top:1px solid var(--border)">🎪 Eventos</div>
+      <div class="pub-section-label" style="border-top:1px solid var(--border);color:#7c5cbf">🎪 Eventos</div>
       <div class="pub-grid" id="pub-eventos"></div>
     </div>
     <div id="anun-panel-wrap"></div>
@@ -602,6 +645,13 @@ function populateFilters(){
   meses.forEach(m=>{html+=`<span class="m-chip" data-mes="${m}" onclick="toggleMonth('${m}')">${MESES_SHORT[m]||m}</span>`;});
   document.getElementById('months-row').innerHTML=html;
   populateBCSelector();
+  renderBC();
+  // Seleccionar ELLE por defecto si existe
+  const bcSel = document.getElementById('bc-pub-select');
+  if(bcSel){
+    const elleOpt = [...bcSel.options].find(o => o.value === 'revista::ELLE');
+    if(elleOpt){ bcSel.value = elleOpt.value; }
+  }
   showEmptyState();
 }
 
@@ -667,6 +717,7 @@ function applyFilters(){
   renderComerciales(base,comp);
   renderPublicaciones();
   renderBC();
+  renderBCGlobal();
   document.getElementById('anun-panel-wrap').innerHTML='';
   activePub=null;
   document.querySelectorAll('.pub-chip').forEach(c=>c.classList.remove('active-pub'));
@@ -678,6 +729,7 @@ function showEmptyState(){
   ['w-sector-site','w-pm-prod','w-pm-prod-site'].forEach(id=>document.getElementById(id).innerHTML=msg);
   ['pub-digital','pub-print','pub-eventos'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
   BC_SLOTS.forEach(s=>{const el=document.getElementById(s.id);if(el)el.innerHTML='<div class="bc-empty">Selecciona año base y año comparado</div>';});
+  BC_SLOTS.forEach((s,i)=>{const el=document.getElementById('bca-'+i);if(el)el.innerHTML='<div class="bc-empty">Selecciona año base y año comparado</div>';});
   const cg=document.getElementById('com-col-left');if(cg)cg.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:12px">Selecciona año base y año comparado para ver el análisis</div>';
   const cgr=document.getElementById('com-col-right');if(cgr)cgr.innerHTML='';
   document.getElementById('anun-panel-wrap').innerHTML='';
@@ -690,13 +742,14 @@ function cleanSectorName(s){
 }
 
 function renderRankings(base,comp){
-  renderRankingCard('rk-pub',    base,comp,r=>r._pub,       null);
-  renderRankingCard('rk-area',   base,comp,r=>r._area,      null);
-  renderRankingCard('rk-sector', base,comp,r=>r._sector,    null);
-  renderRankingCard('rk-familia',base,comp,r=>r._fam,       null);
+  const canalSel = document.getElementById('f-canal').value;
+  renderRankingCard('rk-pub',    base,comp,r=>r._pub,       null, canalSel);
+  renderRankingCard('rk-area',   base,comp,r=>r._area,      null, canalSel);
+  renderRankingCard('rk-sector', base,comp,r=>r._sector,    null, canalSel);
+  renderRankingCard('rk-familia',base,comp,r=>r._fam,       null, canalSel);
 }
 
-function renderRankingCard(elId,base,comp,keyFn,subKeyFn){
+function renderRankingCard(elId,base,comp,keyFn,subKeyFn,canalSel){
   const bMap=aggSum(base,keyFn);
   const cMap=aggSum(comp,keyFn);
 
@@ -734,7 +787,14 @@ function renderRankingCard(elId,base,comp,keyFn,subKeyFn){
       const sm=bSubMap.get(k);
       topSub=[...sm.entries()].sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
     }
-    items.push({k,bv,cv,p,isLost,isNew,diff,topSub});
+    // Para rk-pub con canal EVENTOS: mostrar el producto más frecuente
+    let eventoProd = '';
+    if(elId==='rk-pub' && canalSel==='EVENTOS'){
+      const prodCount = new Map();
+      base.filter(r=>keyFn(r)===k).forEach(r=>{ if(r._prod) prodCount.set(r._prod,(prodCount.get(r._prod)||0)+1); });
+      if(prodCount.size) eventoProd = [...prodCount.entries()].sort((a,b)=>b[1]-a[1])[0][0];
+    }
+    items.push({k,bv,cv,p,isLost,isNew,diff,topSub,eventoProd});
   });
 
   // Ordenar por bruto perdido (diff más negativo primero), luego perdidos, nuevos al final
@@ -757,7 +817,7 @@ function renderRankingCard(elId,base,comp,keyFn,subKeyFn){
     const diff=it.diff;
     const diffText=(it.isLost||it.isNew||it.cv===0)?'':`<span class="rk-diff ${diff>=0?'pos':'neg'}">(${diff>=0?'+':''}${fmt(diff)})</span>`;
     const displayName=elId==='rk-sector'?cleanSectorName(it.k):it.k;
-    const subLabel=it.topSub?`<span class="rk-sub">${it.topSub}</span>`:'';
+    const subLabel=(it.eventoProd?`<span class="rk-sub">${it.eventoProd}</span>`:it.topSub?`<span class="rk-sub">${it.topSub}</span>`:'');
     html+=`<div class="ranking-row">
       <span class="rk-pos">${i+1}</span>
       <span class="rk-name" title="${it.k}">${displayName}${subLabel}</span>
@@ -802,7 +862,7 @@ function renderWorstSectorSite(elId, base, comp){
   items = items.filter(it => it.bv !== 0 || it.cv !== 0);
   // Ordenar por pérdida bruta (más negativo primero)
   items.sort((a,b) => a.diff - b.diff);
-  const worst = items.slice(0,20);
+  const worst = items.slice(0,30);
   const maxAbs = Math.max(...worst.map(it=>Math.abs(it.diff)), 1);
   let html = '';
   worst.forEach((it,i) => {
@@ -846,7 +906,7 @@ function renderWorstPM(elId, base, comp, keyFn, labelFn){
     items.push({name, sub, bPM, cPM, diff, p});
   });
   items.sort((a,b) => a.diff - b.diff);
-  const worst = items.slice(0,20);
+  const worst = items.slice(0,30);
   const maxAbs = Math.max(...worst.map(it=>Math.abs(it.diff)), 1);
   let html = '';
   worst.forEach((it,i) => {
@@ -967,31 +1027,92 @@ function populateBCSelector() {
 
   const grpRevista = document.createElement('optgroup');
   grpRevista.label = '📰 Revista + Web';
-  grpRevista.style.color = '#f5c842'; // accent amarillo
+  grpRevista.style.color = 'var(--accent)';
 
   [...canonRevista].sort().forEach(name => {
     const opt = document.createElement('option');
     opt.value = 'revista::' + name;
     opt.textContent = name;
-    opt.style.color = '#f5c842';
     grpRevista.appendChild(opt);
   });
   if (grpRevista.children.length) sel.appendChild(grpRevista);
+  // Seleccionar ELLE por defecto si no había valor previo
+  // Sin selección por defecto — el usuario debe elegir publicación
 
   const grpEvento = document.createElement('optgroup');
   grpEvento.label = '🎪 Eventos';
-  grpEvento.style.color = '#fb923c'; // naranja
+  grpEvento.style.color = '#7c3aed';
 
   [...canonEvento].sort().forEach(name => {
     const opt = document.createElement('option');
     opt.value = 'evento::' + name;
     opt.textContent = name;
-    opt.style.color = '#fb923c';
+    opt.style.color = '#7c3aed';
     grpEvento.appendChild(opt);
   });
   if (grpEvento.children.length) sel.appendChild(grpEvento);
 
   if (prevVal) { sel.value = prevVal; if (!sel.value) sel.value = ''; }
+}
+
+
+// ── B04a BRANDED CONTENT GLOBAL (todas las publicaciones) ──
+function renderBCGlobal() {
+  const yrBase = document.getElementById('yr-base').value;
+  const NO_DATA = '<div class="bc-empty">Sin datos para este filtro</div>';
+  const WAIT    = '<div class="bc-empty">Selecciona año base para ver datos</div>';
+
+  if (!yrBase) {
+    BC_SLOTS.forEach((s, i) => { const el=document.getElementById('bca-'+i); if(el) el.innerHTML=WAIT; });
+    return;
+  }
+
+  // Todas las filas del año base (sin filtro de publicación)
+  const baseRows = DATA.filter(r => r._year === yrBase && r._fam !== 'Eventos');
+
+  BC_SLOTS.forEach((s, i) => {
+    const el = document.getElementById('bca-' + i);
+    if (!el) return;
+
+    const slotRows = baseRows.filter(r =>
+      s.type === 'prod' ? r._prod === s.value : r._fam === s.value
+    );
+
+    if (!slotRows.length) { el.innerHTML = NO_DATA; return; }
+
+    const sorted = [...slotRows]
+      .sort((a, b) => a._ingreso - b._ingreso)
+      .slice(0, 30);
+
+    el.innerHTML = sorted.map((r, idx) => {
+      const marca = r._marca || r._anun || '(sin marca)';
+      const anun  = r._anun  || '';
+      const pub   = r._pubClean || r._pub || '';
+      const prod  = r._prod  || '';
+      const diferente = anun && anun !== marca;
+
+      let infoHtml;
+      if (s.showProduct) {
+        // Social Networks: línea 1 = marca + anunciante, línea 2 = publicación + producto
+        const anunInline = diferente
+          ? ` <span style="color:var(--text2);font-size:9px;font-style:italic">(${esc(anun)})</span>` : '';
+        const subLine = [pub, prod].filter(Boolean).join(' · ');
+        infoHtml = `<div class="bc-marca">${esc(marca)}${anunInline}</div>`
+                 + (subLine ? `<div class="bc-anun">${esc(subLine)}</div>` : '');
+      } else {
+        // Resto: línea 1 = marca (publicación), línea 2 = anunciante
+        const marcaLine = pub ? `${esc(marca)} <span style="color:var(--text3);font-size:9px">(${esc(pub)})</span>` : esc(marca);
+        const anunBelow = diferente ? `<div class="bc-anun">(${esc(anun)})</div>` : '';
+        infoHtml = `<div class="bc-marca">${marcaLine}</div>${anunBelow}`;
+      }
+
+      return `<div class="bc-row">
+        <span class="bc-pos">${idx+1}</span>
+        <div class="bc-info">${infoHtml}</div>
+        <span class="bc-val">${fmt(r._ingreso)}</span>
+      </div>`;
+    }).join('');
+  });
 }
 
 function renderBC() {
@@ -1036,7 +1157,7 @@ function renderBC() {
     // Cada línea individual del Excel, ordenadas por importe ascendente
     const sorted = [...slotRows]
       .sort((a, b) => a._ingreso - b._ingreso)
-      .slice(0, 20);
+      .slice(0, 30);
 
     el.innerHTML = sorted.map((r, i) => {
       const marca = r._marca || r._anun || '(sin marca)';
@@ -1071,13 +1192,13 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 
 // ── B04c COMERCIALES ──
 function shortName(full){
-  const parts = full.trim().split(/\s+/);
-  if(parts.length < 2) return full;
-  return parts[0] + ' ' + parts[1].charAt(0) + '.';
+  // Devuelve nombre completo sin abreviar
+  return full.trim();
 }
 
 function renderComerciales(base, comp){
   const leftEl  = document.getElementById('com-col-left');
+  const midEl   = document.getElementById('com-col-mid');
   const rightEl = document.getElementById('com-col-right');
   const hint    = document.getElementById('com-hint');
   if(!leftEl || !rightEl) return;
@@ -1088,17 +1209,16 @@ function renderComerciales(base, comp){
   base.forEach(r => { if(!r._comercial) return; bMap.set(r._comercial,(bMap.get(r._comercial)||0)+1); });
   comp.forEach(r => { if(!r._comercial) return; cMap.set(r._comercial,(cMap.get(r._comercial)||0)+1); });
 
-  const allComs = new Set([...bMap.keys(),...cMap.keys()]);
-  if(!allComs.size){ leftEl.innerHTML=EMPTY; rightEl.innerHTML=''; return; }
+  const COMERCIALES_EXCLUIDOS = new Set(['PAULA GUADALUPE DEVOTO','MARCOS MARTIN MOYANO SERRANO','BARCELONA']);
+  const allComs = new Set([...bMap.keys(),...cMap.keys()].filter(c => c && !COMERCIALES_EXCLUIDOS.has(c.trim().toUpperCase())));
+  if(!allComs.size){ leftEl.innerHTML=EMPTY; if(midEl) midEl.innerHTML=''; rightEl.innerHTML=''; return; }
 
-  // Calcular y ordenar por % ascendente (peores primero)
   const items = [...allComs].map(c => {
     const b = bMap.get(c)||0, cp = cMap.get(c)||0;
     const diff = b - cp;
     const pct  = cp > 0 ? (diff/cp)*100 : null;
     return { name: shortName(c), b, cp, diff, pct };
   }).sort((a,b) => {
-    // null (nuevo) va al final
     if(a.pct===null && b.pct===null) return 0;
     if(a.pct===null) return 1;
     if(b.pct===null) return -1;
@@ -1132,9 +1252,11 @@ function renderComerciales(base, comp){
     </table>`;
   };
 
-  const mid = Math.ceil(items.length / 2);
-  leftEl.innerHTML  = buildTable(items.slice(0, mid));
-  rightEl.innerHTML = buildTable(items.slice(mid));
+  const third = Math.ceil(items.length / 3);
+  const second = third + Math.ceil((items.length - third) / 2);
+  leftEl.innerHTML  = buildTable(items.slice(0, third));
+  if(midEl) midEl.innerHTML = buildTable(items.slice(third, second));
+  rightEl.innerHTML = buildTable(items.slice(second));
 }
 
 // ── B5 PUBLICACIONES ──
@@ -1215,7 +1337,7 @@ function renderAnunPanel(pub,canal){
     }
   });
   perdidos.sort((a,b)=>b.cv-a.cv);
-  perdidos=perdidos.slice(0,20);
+  perdidos=perdidos.slice(0,30);
 
   // PEOR COMPORTAMIENTO: en ambos, base < comp — ordenado por bruto perdido
   let peores=[];
@@ -1230,7 +1352,7 @@ function renderAnunPanel(pub,canal){
     }
   });
   peores.sort((a,b)=>a.diff-b.diff);
-  peores=peores.slice(0,20);
+  peores=peores.slice(0,30);
 
   const tagMap={DIGITAL:'Web',PRINT:'Revista',EVENTOS:'Eventos'};
   const tag=tagMap[canal]||canal;
