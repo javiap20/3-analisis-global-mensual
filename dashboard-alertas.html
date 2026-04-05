@@ -238,10 +238,10 @@ html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
     ondragover="event.preventDefault();this.classList.add('drag')"
     ondragleave="this.classList.remove('drag')"
     ondrop="onDrop(event)">
-    <div class="up-icon">📊</div>
-    <div class="up-title">Cargar Excel</div>
-    <div class="up-sub">Arrastra tu <span class="mono">PRINT Y DIGITAL.xlsx</span><br>o pulsa para buscarlo</div>
-    <button class="up-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">Elegir archivo</button>
+    <div class="up-icon" id="up-icon">⏳</div>
+    <div class="up-title" id="up-title">Cargando datos…</div>
+    <div class="up-sub" id="up-sub">Buscando <span class="mono">PRINT Y DIGITAL.xlsx</span> en el servidor</div>
+    <button class="up-btn" id="up-manual-btn" style="display:none" onclick="event.stopPropagation();document.getElementById('file-input').click()">Elegir archivo manualmente</button>
     <div class="up-msg" id="up-msg"></div>
   </div>
 </div>
@@ -585,44 +585,72 @@ function pctClass(p, isLost, isNew){
 function onDrop(e){e.preventDefault();document.getElementById('upload-card').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)processFile(f);}
 function onFileInput(inp){if(inp.files[0])processFile(inp.files[0]);}
 
-function processFile(file){
-  document.getElementById('up-msg').textContent='Leyendo '+file.name+'…';
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const wb=XLSX.read(e.target.result,{type:'array'});
-      const sn=wb.SheetNames.includes(SHEET_NAME)?SHEET_NAME:wb.SheetNames[0];
-      const raw=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:''});
-      DATA=raw.map(r=>{
-        const canal=classifyRow(r);
-        const pubRaw=String(r[COL_PUB]||'').trim();
-        return{
-          _canal:canal,
-          _ingreso:parseIngreso(r[COL_ING]),
-          _prod:String(r[COL_PROD]||'(sin producto)').trim(),
-          _fam:String(r[COL_FAM]||'').trim(),
-          _year:String(r[COL_YEAR]||'').trim(),
-          _mes:String(r[COL_MES]||'').trim(),
-          _pub:pubRaw,
-          _pubClean:cleanPubName(pubRaw,canal),
-          _anun:String(r[COL_ANUN]||'').trim(),
-          _marca:String(r[COL_MARCA]||'').trim(),
-          _comercial:String(r[COL_COMERCIAL]||'').trim(),
-          _area:String(r[COL_AREA]||'').trim(),
-          _sector:String(r[COL_SECTOR]||'').trim(),
-        };
-      });
-      document.getElementById('top-badge').style.display='';
-      document.getElementById('top-badge').textContent=DATA.length.toLocaleString('es-ES')+' registros · '+file.name;
-      populateFilters();
-      document.getElementById('upload-screen').style.display='none';
-      document.getElementById('app').style.display='block';
-      applyFilters();
-    }catch(err){
-      document.getElementById('up-msg').textContent='Error: '+err.message;
-      console.error(err);
-    }
-  };
+// ── CARGA AUTOMÁTICA DESDE SERVIDOR ──
+// Intenta cargar "PRINT Y DIGITAL.xlsx" desde la misma carpeta del servidor.
+// Si no encuentra el archivo (entorno local sin servidor), muestra la pantalla
+// de carga manual sin ningún error visible.
+const EXCEL_FILENAME = 'PRINT Y DIGITAL.xlsx';
+
+async function autoLoadFromServer() {
+  try {
+    const res = await fetch(EXCEL_FILENAME, { cache: 'no-cache' });
+    if (!res.ok) throw new Error('No encontrado');
+    const buf = await res.arrayBuffer();
+    processArrayBuffer(buf, EXCEL_FILENAME);
+  } catch(e) {
+    // No hay servidor o el archivo no existe → mostrar carga manual
+    showManualUpload();
+  }
+}
+
+function showManualUpload() {
+  document.getElementById('up-icon').textContent = '📊';
+  document.getElementById('up-title').textContent = 'Cargar Excel';
+  document.getElementById('up-sub').innerHTML = 'Arrastra tu <span class="mono">PRINT Y DIGITAL.xlsx</span><br>o pulsa para buscarlo';
+  document.getElementById('up-manual-btn').style.display = '';
+}
+
+function processArrayBuffer(buffer, filename) {
+  try {
+    const wb = XLSX.read(buffer, {type:'array'});
+    const sn = wb.SheetNames.includes(SHEET_NAME) ? SHEET_NAME : wb.SheetNames[0];
+    const raw = XLSX.utils.sheet_to_json(wb.Sheets[sn], {defval:''});
+    DATA = raw.map(r => {
+      const canal = classifyRow(r);
+      const pubRaw = String(r[COL_PUB]||'').trim();
+      return {
+        _canal: canal,
+        _ingreso: parseIngreso(r[COL_ING]),
+        _prod: String(r[COL_PROD]||'(sin producto)').trim(),
+        _fam: String(r[COL_FAM]||'').trim(),
+        _year: String(r[COL_YEAR]||'').trim(),
+        _mes: String(r[COL_MES]||'').trim(),
+        _pub: pubRaw,
+        _pubClean: cleanPubName(pubRaw, canal),
+        _anun: String(r[COL_ANUN]||'').trim(),
+        _marca: String(r[COL_MARCA]||'').trim(),
+        _comercial: String(r[COL_COMERCIAL]||'').trim(),
+        _area: String(r[COL_AREA]||'').trim(),
+        _sector: String(r[COL_SECTOR]||'').trim(),
+      };
+    });
+    document.getElementById('top-badge').style.display = '';
+    document.getElementById('top-badge').textContent = DATA.length.toLocaleString('es-ES') + ' registros · ' + filename;
+    populateFilters();
+    document.getElementById('upload-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    applyFilters();
+  } catch(err) {
+    document.getElementById('up-msg').textContent = 'Error al leer el archivo: ' + err.message;
+    showManualUpload();
+    console.error(err);
+  }
+}
+
+function processFile(file) {
+  document.getElementById('up-msg').textContent = 'Leyendo ' + file.name + '…';
+  const reader = new FileReader();
+  reader.onload = e => processArrayBuffer(e.target.result, file.name);
   reader.readAsArrayBuffer(file);
 }
 
@@ -1189,6 +1217,9 @@ function renderBC() {
 }
 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Arrancar carga automática al terminar de cargar el DOM
+document.addEventListener('DOMContentLoaded', autoLoadFromServer);
 
 // ── B04c COMERCIALES ──
 function shortName(full){
