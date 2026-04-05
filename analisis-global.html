@@ -561,10 +561,10 @@ h1 {
     </div>
   </div>
 
-  <div id="statsBlockRest" style="display:none; margin-top: 20px;">
+  <div id="statsBlockRest" style="display:none; margin-top: 20px; background: rgba(5,46,22,0.6); border: 1px solid #16a34a; border-radius: 12px; padding: 14px 14px 4px 14px;">
     <div id="restTitleDisplay" class="section-title title-rest">Ingresos Restantes</div>
     <div class="statsBlock">
-      <div class="subBlock statsBase"><div class="statsValues"><div>Fact. Base (Resto)<div id="r-totalStatsBase" class="value">0€</div></div><div>Nº líneas<div id="r-linesStatsBase" class="value">0</div></div><div>Presp. medio<div id="r-avgStatsBase" class="value">0€</div></div></div></div>
+      <div class="subBlock statsBase"><div class="statsValues"><div>Fact. Base (Restante)<div id="r-totalStatsBase" class="value">0€</div></div><div>Nº líneas<div id="r-linesStatsBase" class="value">0</div></div><div>Presp. medio<div id="r-avgStatsBase" class="value">0€</div></div></div></div>
       <div class="subBlock statsDiff"><div class="statsValues"><div>% Crec. Fact.<div id="r-diffTotalStats" class="value">0%</div></div><div>% Crec. Presp.<div id="r-diffAvgStats" class="value">0%</div></div></div></div>
       <div class="subBlock statsComp"><div class="statsValues"><div>Fact. Comp (Resto)<div id="r-totalStatsComp" class="value">-</div></div><div>Nº líneas<div id="r-linesStatsComp" class="value">0</div></div><div>Presp. medio<div id="r-avgStatsComp" class="value">-</div></div></div></div>
     </div>
@@ -987,15 +987,70 @@ function render(){
   const gBase = filterGlobal(y1, m1);
   const gComp = filterGlobal(y2, m2);
   updatePanel("g-", gBase, gComp, y2);
-  updatePanel("f-", filterFn(y1, m1, famF, []), filterFn(y2, m2, famF, []), y2);
-  const mixBase = filterFn(y1, m1, famF, areaF);
-  const mixComp = filterFn(y2, m2, famF, areaF);
-  updatePanel("m-", mixBase, mixComp, y2);
-  const onlyFamilyBase = filterFn(y1, m1, famF, []);
-  const onlyFamilyComp = filterFn(y2, m2, famF, []);
-  const restBase = onlyFamilyBase.filter(d => !mixBase.includes(d));
-  const restComp = onlyFamilyComp.filter(d => !mixComp.includes(d));
+
+  // Bloque Familias: si hay familia seleccionada → solo esa familia; si no → total global
+  const famBase = filterFn(y1, m1, famF, []);
+  const famComp = filterFn(y2, m2, famF, []);
+  updatePanel("f-", famBase, famComp, y2);
+
+  // Bloque Área (antes "Mix"): si hay área seleccionada → solo esa área (sin filtro familia); si no → total global
+  const areaOnlyBase = filterFn(y1, m1, [], areaF);
+  const areaOnlyComp = filterFn(y2, m2, [], areaF);
+  updatePanel("m-", areaOnlyBase, areaOnlyComp, y2);
+
+  // Restantes: Total − Familias − Área, evitando doble conteo de líneas en ambos filtros.
+  // Usamos suma de importes: Total - famF - areaF + intersección(famF∩areaF)  [inclusión-exclusión]
+  const interBase = famF.length > 0 && areaF.length > 0
+    ? filterFn(y1, m1, famF, areaF)   // líneas que son familia Y área a la vez
+    : [];
+  const interComp = famF.length > 0 && areaF.length > 0
+    ? filterFn(y2, m2, famF, areaF)
+    : [];
+  const sumIngreso = arr => arr.reduce((s, d) => s + d.ingreso, 0);
+  const gTotalBase = sumIngreso(gBase);
+  const gTotalComp = sumIngreso(gComp);
+  const restTotalBase = gTotalBase
+    - (famF.length > 0 ? sumIngreso(famBase) : 0)
+    - (areaF.length > 0 ? sumIngreso(areaOnlyBase) : 0)
+    + sumIngreso(interBase);   // sumamos de vuelta lo que restamos dos veces
+  const restTotalComp = gTotalComp
+    - (famF.length > 0 ? sumIngreso(famComp) : 0)
+    - (areaF.length > 0 ? sumIngreso(areaOnlyComp) : 0)
+    + sumIngreso(interComp);
+  // Para líneas y presupuesto medio: filtramos líneas reales que no están en ninguno de los dos grupos
+  const restBase = gBase.filter(d =>
+    (famF.length === 0 || !famF.includes(d.Family)) &&
+    (areaF.length === 0 || !areaF.includes(d.Area))
+  );
+  const restComp = gComp.filter(d =>
+    (famF.length === 0 || !famF.includes(d.Family)) &&
+    (areaF.length === 0 || !areaF.includes(d.Area))
+  );
+  // Parcheamos el total con el valor correcto (inclusión-exclusión) manteniendo líneas reales para el avg
+  const restLinesBase = restBase.reduce((s,d) => s + (d.ingreso !== 0 ? 1 : 0), 0);
+  const restLinesComp = restComp.reduce((s,d) => s + (d.ingreso !== 0 ? 1 : 0), 0);
+  // Usamos updatePanel con datos reales pero sobreescribimos el total con el valor corregido
   updatePanel("r-", restBase, restComp, y2);
+  // Corregir el total mostrado con inclusión-exclusión
+  document.getElementById("r-totalStatsBase").textContent = formatCurrency(restTotalBase);
+  document.getElementById("r-avgStatsBase").textContent = formatCurrency(
+    restBase.length > 0 ? restTotalBase / Math.max(1, calcNetting(restBase).lines) : 0
+  );
+  if (y2 !== "Sin comparar") {
+    document.getElementById("r-totalStatsComp").textContent = formatCurrency(restTotalComp);
+    document.getElementById("r-avgStatsComp").textContent = formatCurrency(
+      restComp.length > 0 ? restTotalComp / Math.max(1, calcNetting(restComp).lines) : 0
+    );
+    const dPct = restTotalComp ? Math.round(((restTotalBase / restTotalComp) - 1) * 100) : 0;
+    const dAbs = restTotalBase - restTotalComp;
+    document.getElementById("r-diffTotalStats").innerHTML =
+      `${dPct > 0 ? "+" : ""}${dPct}% <span class="diff-abs">(${dAbs >= 0 ? "+" : ""}${formatCurrency(dAbs)})</span>`;
+    document.getElementById("r-diffTotalStats").className = "value" + (dPct < 0 ? " negative" : "");
+  }
+
+  // Alias para rankings y otras funciones que usan mixBase/mixComp
+  const mixBase = famBase;
+  const mixComp = famComp;
 
   const labels = [];
   if (siteF !== "Todos") labels.push(`SITE: ${siteF.toUpperCase()}`);
@@ -1027,11 +1082,19 @@ function render(){
   const areaText = areaF.length > 0 ? areaF.join(", ") : "Todas";
 
   if (typeof famTitleDisplay !== 'undefined') famTitleDisplay.innerHTML = `Total Ingresos Familias <span style="font-size: 0.75em; opacity: 0.8;">(${famText})</span>`;
-  if (typeof mixTitleDisplay !== 'undefined') mixTitleDisplay.innerHTML = `Ingresos Familia <span style="font-size: 0.7em; opacity: 0.8;">(${famText})</span> + Área <span style="font-size: 0.7em; opacity: 0.8;">(${areaText})</span>`;
+  if (typeof mixTitleDisplay !== 'undefined') mixTitleDisplay.innerHTML = `Ingresos por Área <span style="font-size: 0.7em; opacity: 0.8;">(${areaText})</span>`;
   
   const rTD = document.getElementById("restTitleDisplay");
   if (rTD) {
-      rTD.innerHTML = areaF.length > 0 ? `Ingresos totales menos <span style="font-size: 0.75em; opacity: 0.8;">(${areaText})</span>` : "Ingresos Restantes";
+      if (famF.length > 0 && areaF.length > 0) {
+          rTD.innerHTML = `🔢 Restantes <span style="font-size: 0.75em; opacity: 0.8;">(Total − familia: ${famText} − área: ${areaText})</span>`;
+      } else if (famF.length > 0) {
+          rTD.innerHTML = `🔢 Restantes <span style="font-size: 0.75em; opacity: 0.8;">(Total − familia: ${famText})</span>`;
+      } else if (areaF.length > 0) {
+          rTD.innerHTML = `🔢 Restantes <span style="font-size: 0.75em; opacity: 0.8;">(Total − área: ${areaText})</span>`;
+      } else {
+          rTD.innerHTML = "🔢 Ingresos Restantes <span style=\"font-size: 0.75em; opacity: 0.6;\">(selecciona familia o área para ver la diferencia)</span>";
+      }
   }
 
   // --- BLOQUE DE SECTORES (LO QUE BUSCAMOS) ---

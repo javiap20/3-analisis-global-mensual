@@ -351,6 +351,20 @@ td.avg-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12
 
 .empty-state { text-align: center; color: var(--text3); padding: 40px; font-size: 13px; }
 
+/* VS AÑO ANTERIOR */
+.vs-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 11px; white-space: nowrap; }
+.vs-up {
+  color: var(--green);
+  font-weight: 700;
+}
+.vs-down {
+  color: var(--coral);
+  font-weight: 700;
+}
+.vs-neutral { color: var(--text3); font-weight: 500; }
+.vs-na { color: var(--text3); font-size: 10px; font-style: italic; }
+.vs-bruto { font-size: 10px; font-weight: 400; opacity: 0.8; display: block; margin-top: 1px; }
+
 /* SOURCE PILL */
 .source-pill {
   font-size: 11px; padding: 3px 10px;
@@ -669,7 +683,9 @@ function renderTable() {
   const rows   = getFiltered();
   const search = document.getElementById('f-search').value.toLowerCase().trim();
   const sortBy = document.getElementById('f-sort').value;
+  const yr     = document.getElementById('f-year').value;
 
+  // ── Build current-year aggregates ──
   const map = new Map();
   rows.forEach(r => {
     const key = r._prod + '|||' + r._canal;
@@ -685,12 +701,50 @@ function renderTable() {
     else                      { g.cero++; }
   });
 
+  // ── Build previous-year aggregates (only when a specific year is selected) ──
+  const prevMap = new Map();
+  if (yr !== 'all') {
+    const prevYr = String(parseInt(yr, 10) - 1);
+    const canal  = document.getElementById('f-canal').value;
+    DATA.filter(r => {
+      if (r._year !== prevYr) return false;
+      if (canal !== 'all' && r._canal !== canal) return false;
+      if (selectedMonths.size > 0 && !selectedMonths.has(r._mes)) return false;
+      return true;
+    }).forEach(r => {
+      const key = r._prod + '|||' + r._canal;
+      if (!prevMap.has(key)) prevMap.set(key, { lineas: 0, cero: 0, sumaPos: 0, sumaNeg: 0 });
+      const g = prevMap.get(key);
+      g.lineas++;
+      if (r._ingreso > 0)      { g.sumaPos += r._ingreso; }
+      else if (r._ingreso < 0) { g.sumaNeg += r._ingreso; }
+      else                     { g.cero++; }
+    });
+  }
+
   let items = [...map.values()].map(g => {
     const neto = g.sumaPos + g.sumaNeg;
     const avgCon  = g.lineas > 0 ? neto / g.lineas : 0;
     const lineasSinCero = g.lineas - g.cero;
     const avgSin  = lineasSinCero > 0 ? neto / lineasSinCero : 0;
-    return { ...g, neto, avgCon, avgSin };
+
+    // Previous year comparison
+    let avgPrev = null;
+    if (yr !== 'all') {
+      const key = g.prod + '|||' + g.canal;
+      const p = prevMap.get(key);
+      if (p) {
+        const pNeto = p.sumaPos + p.sumaNeg;
+        if (zeroMode === 'con') {
+          avgPrev = p.lineas > 0 ? pNeto / p.lineas : 0;
+        } else {
+          const pSinCero = p.lineas - p.cero;
+          avgPrev = pSinCero > 0 ? pNeto / pSinCero : 0;
+        }
+      }
+    }
+
+    return { ...g, neto, avgCon, avgSin, avgPrev };
   });
 
   if (search) items = items.filter(g => g.prod.toLowerCase().includes(search));
@@ -723,14 +777,17 @@ function renderTable() {
   `;
 
   const note = document.getElementById('info-note');
+  note.classList.remove('hidden');
   if (zeroMode === 'sin') {
-    note.classList.remove('hidden');
-    document.getElementById('info-text').innerHTML = '<strong>Modo activo: sin líneas a 0 €.</strong> El precio medio se calcula dividiendo el ingreso neto entre las líneas con valor distinto de 0 (positivas + negativas). Se muestra la columna "Líneas a 0 €" para mayor claridad.';
+    document.getElementById('info-text').innerHTML = '<strong>Modo activo: No incluye líneas a 0 €.</strong> El presupuesto medio se calcula dividiendo el ingreso neto entre todas las líneas con valor superior a cero (exceptuando los reparos). En la tabla se muestra la columna "Líneas a 0 €" para mayor claridad.';
   } else {
-    note.classList.add('hidden');
+    document.getElementById('info-text').innerHTML = '<strong>Modo activo: Incluye líneas a 0 €.</strong> El presupuesto medio se calcula dividiendo el ingreso neto entre todas las líneas (exceptuando los reparos).';
   }
 
   const showCeroCol = zeroMode === 'sin';
+  const showVsCol   = yr !== 'all';
+  const totalCols   = 10 + (showCeroCol ? 1 : 0) + (showVsCol ? 1 : 0);
+  const prevYrLabel = yr !== 'all' ? String(parseInt(yr, 10) - 1) : '';
   document.getElementById('thead').innerHTML = `<tr>
     <th>Producto</th><th>Canal</th><th>Familia</th>
     <th class="num">Líneas<br>totales</th>
@@ -741,11 +798,12 @@ function renderTable() {
     <th class="num">Suma<br>negativa</th>
     <th class="num">Ingreso<br>neto</th>
     <th class="num" style="color:var(--accent)">Precio medio${zeroMode === 'sin' ? '<br><span style="font-size:9px;font-weight:400">(sin 0 €)</span>' : '<br><span style="font-size:9px;font-weight:400">(con 0 €)</span>'}</th>
+    ${showVsCol ? `<th class="num" style="color:var(--text2)">vs ${prevYrLabel}<br><span style="font-size:9px;font-weight:400">variación</span></th>` : ''}
   </tr>`;
 
   const tbody = document.getElementById('tbody');
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="${showCeroCol ? 11 : 10}" class="empty-state">Sin datos para los filtros seleccionados</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${totalCols}" class="empty-state">Sin datos para los filtros seleccionados</td></tr>`;
     return;
   }
 
@@ -757,9 +815,30 @@ function renderTable() {
   items.forEach(g => {
     if (byFamilia && g.fam !== currentFam) {
       currentFam = g.fam;
-      html += `<tr class="family-header"><td colspan="${showCeroCol ? 11 : 10}">📁 ${g.fam || '(sin familia)'}</td></tr>`;
+      html += `<tr class="family-header"><td colspan="${totalCols}">📁 ${g.fam || '(sin familia)'}</td></tr>`;
     }
     const avgVal = zeroMode === 'con' ? g.avgCon : g.avgSin;
+
+    // Compute vs column HTML
+    let vsHtml = '';
+    if (showVsCol) {
+      if (g.avgPrev === null) {
+        vsHtml = `<td class="vs-col"><span class="vs-na">Sin datos ${prevYrLabel}</span></td>`;
+      } else if (g.avgPrev === 0) {
+        vsHtml = `<td class="vs-col"><span class="vs-na">Precio prev. 0 €</span></td>`;
+      } else {
+        const diff = avgVal - g.avgPrev;
+        const pct  = (diff / Math.abs(g.avgPrev)) * 100;
+        const sign  = diff >= 0 ? '+' : '';
+        const cls   = diff >= 0 ? 'vs-up' : 'vs-down';
+        const arrow = diff >= 0 ? '▲' : '▼';
+        vsHtml = `<td class="vs-col">
+          <span class="${cls}">${arrow} ${sign}${pct.toFixed(1)}%</span>
+          <span class="vs-bruto ${cls}">(${sign}${fmt(diff)})</span>
+        </td>`;
+      }
+    }
+
     html += `<tr>
       <td><strong>${g.prod}</strong></td>
       <td><span class="badge ${canalClass[g.canal] || 'badge-O'}">${g.canal}</span></td>
@@ -772,6 +851,7 @@ function renderTable() {
       <td class="num ${g.sumaNeg < 0 ? 'neg' : 'num-neutral'}">${g.sumaNeg !== 0 ? fmt(g.sumaNeg) : '—'}</td>
       <td class="num"><strong>${fmt(g.neto)}</strong></td>
       <td class="avg-col">${fmt(avgVal)}</td>
+      ${vsHtml}
     </tr>`;
   });
   tbody.innerHTML = html;
