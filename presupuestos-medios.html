@@ -376,6 +376,178 @@ td.avg-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg4); }
 ::-webkit-scrollbar-thumb { background: #9a9ab8; border-radius: 3px; }
+
+/* EXPAND TOGGLE */
+.expand-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--text3);
+  padding: 2px 4px;
+  margin-right: 4px;
+  transition: transform 0.18s;
+  line-height: 1;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+}
+.expand-btn.open { transform: rotate(90deg); }
+
+/* SECTOR ROWS */
+.sector-row td {
+  background: #f6f7fa !important;
+  padding: 0;
+  border-bottom: none;
+}
+.sector-row:last-of-type td { border-bottom: 1px solid #e0e2e8; }
+.sector-inner {
+  padding: 8px 16px 8px 48px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.sector-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+}
+.sector-chip .sc-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: var(--text2);
+  font-weight: 500;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sector-chip .sc-val { font-weight: 700; }
+.sc-above { color: var(--green); }
+.sc-below { color: var(--coral); }
+.sc-equal { color: var(--text3); }
+.sector-empty {
+  padding: 8px 16px 8px 48px;
+  font-size: 11px;
+  color: var(--text3);
+  font-style: italic;
+}
+
+/* TOOLTIP */
+.tooltip-wrap { position: relative; display: inline-block; }
+.tt-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--bg4);
+  border: 1px solid var(--border2);
+  font-size: 10px;
+  color: var(--text3);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  font-style: normal;
+  line-height: 1;
+  vertical-align: middle;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+.tt-trigger:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.tooltip-box {
+  display: none;
+  position: fixed;
+  background: #1a1a2e;
+  color: #e8e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  min-width: 520px;
+  max-width: 640px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  z-index: 9999;
+  font-size: 12px;
+  pointer-events: none;
+}
+.tt-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+.tt-col-divider {
+  width: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 0 -8px;
+}
+.tooltip-box.tt-visible { display: block; }
+.tooltip-box::after {
+  content: '';
+  position: absolute;
+  border: 6px solid transparent;
+}
+.tooltip-box.tt-above::after {
+  top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border-top-color: #1a1a2e;
+}
+.tooltip-box.tt-below::after {
+  bottom: 100%; left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: #1a1a2e;
+}
+.tt-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #7dd3fc;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  margin-bottom: 8px;
+  padding-bottom: 7px;
+  border-bottom: 1.5px solid rgba(125,211,252,0.35);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tt-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 13px;
+  background: #7dd3fc;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.tt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 3px 0;
+  font-size: 11px;
+}
+.tt-row .tt-area { color: #b8b8d0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-row .tt-val { font-family: 'DM Mono', monospace; font-weight: 700; }
+.tt-above { color: #4ade80; }
+.tt-below { color: #f87171; }
+.tt-equal { color: #9999bb; }
+.tt-avg-line {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1.5px solid rgba(125,211,252,0.35);
+  font-size: 10px;
+  color: #7dd3fc;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  display: flex;
+  justify-content: space-between;
+}
+.tt-avg-line span { font-family: 'DM Mono', monospace; color: #aaaacc; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -489,6 +661,7 @@ const COL_PROD   = 'Producto';
 const COL_YEAR   = 'Año inserción';
 const COL_ING    = 'Imp.Neto a Comisionar';
 const COL_AREA   = 'ÁREAS';
+const COL_SECTOR = 'Sector';
 const SHEET_NAME = 'Analizador general';
 
 // ── Rutas a intentar en orden. Edita este array para añadir o cambiar nombres.
@@ -597,6 +770,8 @@ function processArrayBuffer(buffer, fileName, source) {
       _fam:     (row[COL_FAM]  || '').trim(),
       _year:    String(row[COL_YEAR] || '').trim(),
       _mes:     String(row[COL_MES]  || '').trim(),
+      _area:    (row[COL_AREA]   || '').trim(),
+      _sector:  (row[COL_SECTOR] || '').trim(),
     }));
 
     document.getElementById('top-badge').style.display = '';
@@ -692,13 +867,31 @@ function renderTable() {
     if (!map.has(key)) map.set(key, {
       prod: r._prod, canal: r._canal, fam: r._fam,
       lineas: 0, pos: 0, neg: 0, cero: 0,
-      sumaPos: 0, sumaNeg: 0
+      sumaPos: 0, sumaNeg: 0,
+      areaMap: new Map(),
+      sectorMap: new Map()
     });
     const g = map.get(key);
     g.lineas++;
     if (r._ingreso > 0)       { g.pos++;  g.sumaPos += r._ingreso; }
     else if (r._ingreso < 0)  { g.neg++;  g.sumaNeg += r._ingreso; }
     else                      { g.cero++; }
+    // area breakdown
+    const areaKey = r._area || '(sin área)';
+    if (!g.areaMap.has(areaKey)) g.areaMap.set(areaKey, { lineas: 0, cero: 0, sumaPos: 0, sumaNeg: 0 });
+    const ag = g.areaMap.get(areaKey);
+    ag.lineas++;
+    if (r._ingreso > 0)      { ag.sumaPos += r._ingreso; }
+    else if (r._ingreso < 0) { ag.sumaNeg += r._ingreso; }
+    else                     { ag.cero++; }
+    // sector breakdown
+    const sectorKey = r._sector || '(sin sector)';
+    if (!g.sectorMap.has(sectorKey)) g.sectorMap.set(sectorKey, { lineas: 0, cero: 0, sumaPos: 0, sumaNeg: 0 });
+    const sg = g.sectorMap.get(sectorKey);
+    sg.lineas++;
+    if (r._ingreso > 0)      { sg.sumaPos += r._ingreso; }
+    else if (r._ingreso < 0) { sg.sumaNeg += r._ingreso; }
+    else                     { sg.cero++; }
   });
 
   // ── Build previous-year aggregates (only when a specific year is selected) ──
@@ -744,7 +937,37 @@ function renderTable() {
       }
     }
 
-    return { ...g, neto, avgCon, avgSin, avgPrev };
+    // Compute area averages (for tooltip)
+    const areas = [];
+    g.areaMap.forEach((ag, areaName) => {
+      const aNeto = ag.sumaPos + ag.sumaNeg;
+      let aAvg;
+      if (zeroMode === 'sin') {
+        const aSin = ag.lineas - ag.cero;
+        aAvg = aSin > 0 ? aNeto / aSin : 0;
+      } else {
+        aAvg = ag.lineas > 0 ? aNeto / ag.lineas : 0;
+      }
+      areas.push({ area: areaName, avg: aAvg });
+    });
+    areas.sort((a, b) => b.avg - a.avg);
+
+    // Compute sector averages (for expand row)
+    const sectors = [];
+    g.sectorMap.forEach((sg, sectorName) => {
+      const sNeto = sg.sumaPos + sg.sumaNeg;
+      let sAvg;
+      if (zeroMode === 'sin') {
+        const sSin = sg.lineas - sg.cero;
+        sAvg = sSin > 0 ? sNeto / sSin : 0;
+      } else {
+        sAvg = sg.lineas > 0 ? sNeto / sg.lineas : 0;
+      }
+      sectors.push({ area: sectorName, avg: sAvg });
+    });
+    sectors.sort((a, b) => b.avg - a.avg);
+
+    return { ...g, neto, avgCon, avgSin, avgPrev, areas, sectors };
   });
 
   if (search) items = items.filter(g => g.prod.toLowerCase().includes(search));
@@ -812,14 +1035,41 @@ function renderTable() {
   let currentFam = null;
   const byFamilia = sortBy === 'familia';
 
-  items.forEach(g => {
+  items.forEach((g, idx) => {
     if (byFamilia && g.fam !== currentFam) {
       currentFam = g.fam;
       html += `<tr class="family-header"><td colspan="${totalCols}">📁 ${g.fam || '(sin familia)'}</td></tr>`;
     }
     const avgVal = zeroMode === 'con' ? g.avgCon : g.avgSin;
+    const rowId = 'row-' + idx;
 
-    // Compute vs column HTML
+    // Build tooltip content (by ÁREA)
+    let ttRows = '';
+    if (g.areas.length > 0) {
+      g.areas.forEach(s => {
+        const cls = s.avg > avgVal ? 'tt-above' : s.avg < avgVal ? 'tt-below' : 'tt-equal';
+        ttRows += `<div class="tt-row">
+          <span class="tt-area">${s.area}</span>
+          <span class="tt-val ${cls}">${fmt(s.avg)}</span>
+        </div>`;
+      });
+    } else {
+      ttRows = `<div class="tt-row"><span class="tt-area" style="font-style:italic">Sin datos de área</span></div>`;
+    }
+
+    // Build tooltip sector rows (right column)
+    let ttSectorRows = '';
+    if (g.sectors.length > 0) {
+      g.sectors.forEach(s => {
+        const cls = s.avg > avgVal ? 'tt-above' : s.avg < avgVal ? 'tt-below' : 'tt-equal';
+        ttSectorRows += `<div class="tt-row">
+          <span class="tt-area">${s.area}</span>
+          <span class="tt-val ${cls}">${fmt(s.avg)}</span>
+        </div>`;
+      });
+    } else {
+      ttSectorRows = `<div class="tt-row"><span class="tt-area" style="font-style:italic">Sin datos de sector</span></div>`;
+    }
     let vsHtml = '';
     if (showVsCol) {
       if (g.avgPrev === null) {
@@ -839,8 +1089,45 @@ function renderTable() {
       }
     }
 
-    html += `<tr>
-      <td><strong>${g.prod}</strong></td>
+    // Sector expand chips HTML (by SECTOR)
+    let sectorChips = '';
+    if (g.sectors.length > 0) {
+      g.sectors.forEach(s => {
+        const cls = s.avg > avgVal ? 'sc-above' : s.avg < avgVal ? 'sc-below' : 'sc-equal';
+        sectorChips += `<span class="sector-chip">
+          <span class="sc-label">${s.area}</span>
+          <span class="sc-val ${cls}">${fmt(s.avg)}</span>
+        </span>`;
+      });
+    } else {
+      sectorChips = `<span style="font-size:11px;color:var(--text3);font-style:italic">Sin datos de sector</span>`;
+    }
+
+    html += `<tr data-rowid="${rowId}">
+      <td>
+        <button class="expand-btn" id="btn-${rowId}" onclick="toggleSector('${rowId}')">▶</button>
+        <strong>${g.prod}</strong>
+        <span class="tooltip-wrap">
+          <span class="tt-trigger" id="tti-${rowId}"
+            onmouseenter="showTooltip('tti-${rowId}','tt-${rowId}')"
+            onmouseleave="hideTooltip('tt-${rowId}')"
+            onclick="toggleTooltip(event,'tti-${rowId}','tt-${rowId}')">i</span>
+          <div class="tooltip-box" id="tt-${rowId}">
+            <div class="tt-cols">
+              <div>
+                <div class="tt-title">Presupuesto medio por área</div>
+                ${ttRows}
+                <div class="tt-avg-line">Media del producto <span>${fmt(avgVal)}</span></div>
+              </div>
+              <div style="border-left:1px solid rgba(255,255,255,0.08);padding-left:16px">
+                <div class="tt-title">Presupuesto medio por sector</div>
+                ${ttSectorRows}
+                <div class="tt-avg-line">Media del producto <span>${fmt(avgVal)}</span></div>
+              </div>
+            </div>
+          </div>
+        </span>
+      </td>
       <td><span class="badge ${canalClass[g.canal] || 'badge-O'}">${g.canal}</span></td>
       <td style="font-size:11px;color:var(--text3)">${g.fam}</td>
       <td class="num">${fmtNum(g.lineas)}</td>
@@ -852,9 +1139,105 @@ function renderTable() {
       <td class="num"><strong>${fmt(g.neto)}</strong></td>
       <td class="avg-col">${fmt(avgVal)}</td>
       ${vsHtml}
+    </tr>
+    <tr class="sector-row" id="sector-${rowId}" style="display:none">
+      <td colspan="${totalCols}">
+        <div class="sector-inner">
+          <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-weight:600;margin-right:4px;white-space:nowrap">Por sector →</span>
+          ${sectorChips}
+        </div>
+      </td>
     </tr>`;
   });
   tbody.innerHTML = html;
+
+  // Close tooltips when clicking outside
+  document.addEventListener('click', closeTipsOutside, { once: false });
+}
+
+// ─── TOOLTIP HELPERS ──────────────────────────────────────────────────────────
+let _openTooltip = null;
+
+function positionTooltip(trigger, box) {
+  const tr = trigger.getBoundingClientRect();
+  const margin = 10;
+  const spaceAbove = tr.top;
+  const spaceBelow = window.innerHeight - tr.bottom;
+
+  // Temporarily show to measure height
+  box.style.visibility = 'hidden';
+  box.style.display = 'block';
+  const bh = box.offsetHeight;
+  const bw = box.offsetWidth;
+  box.style.display = '';
+  box.style.visibility = '';
+
+  // Decide direction
+  const goBelow = spaceAbove < bh + margin + 20 && spaceBelow >= bh + margin;
+  box.classList.toggle('tt-above', !goBelow);
+  box.classList.toggle('tt-below', goBelow);
+
+  // Vertical position
+  let top;
+  if (goBelow) {
+    top = tr.bottom + 8;
+  } else {
+    top = tr.top - bh - 8;
+  }
+  top = Math.max(margin, Math.min(top, window.innerHeight - bh - margin));
+
+  // Horizontal: center on trigger, clamp to viewport
+  let left = tr.left + tr.width / 2 - bw / 2;
+  left = Math.max(margin, Math.min(left, window.innerWidth - bw - margin));
+
+  box.style.top  = top + 'px';
+  box.style.left = left + 'px';
+}
+
+function showTooltip(triggerId, boxId) {
+  if (_openTooltip && _openTooltip !== boxId) document.getElementById(_openTooltip)?.classList.remove('tt-visible');
+  const trigger = document.getElementById(triggerId);
+  const box = document.getElementById(boxId);
+  if (!trigger || !box) return;
+  positionTooltip(trigger, box);
+  box.classList.add('tt-visible');
+  _openTooltip = boxId;
+}
+function hideTooltip(id) {
+  document.getElementById(id)?.classList.remove('tt-visible');
+  if (_openTooltip === id) _openTooltip = null;
+}
+function toggleTooltip(e, triggerId, boxId) {
+  e.stopPropagation();
+  const box = document.getElementById(boxId);
+  if (!box) return;
+  const isOpen = box.classList.contains('tt-visible');
+  if (_openTooltip && _openTooltip !== boxId) document.getElementById(_openTooltip)?.classList.remove('tt-visible');
+  if (isOpen) {
+    box.classList.remove('tt-visible');
+    _openTooltip = null;
+  } else {
+    const trigger = document.getElementById(triggerId);
+    positionTooltip(trigger, box);
+    box.classList.add('tt-visible');
+    _openTooltip = boxId;
+  }
+}
+function closeTipsOutside(e) {
+  if (_openTooltip && !e.target.closest('.tooltip-wrap')) {
+    document.getElementById(_openTooltip)?.classList.remove('tt-visible');
+    _openTooltip = null;
+  }
+}
+
+// ─── SECTOR EXPAND ────────────────────────────────────────────────────────────
+function toggleSector(rowId) {
+  const sectorRow = document.getElementById('sector-' + rowId);
+  const btn = document.getElementById('btn-' + rowId);
+  if (!sectorRow) return;
+  const isOpen = sectorRow.style.display !== 'none';
+  sectorRow.style.display = isOpen ? 'none' : '';
+  btn?.classList.toggle('open', !isOpen);
 }
 </script>
 </body>
