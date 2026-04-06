@@ -75,6 +75,15 @@ html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
 .m-chip.active{background:var(--accent);border-color:var(--accent);color:#ffffff;font-weight:700;}
 .m-chip.all-chip.active{background:var(--bg4);border-color:var(--border2);color:var(--text);}
 
+/* FAMILY FILTER */
+.fam-filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.fam-filter-label{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);font-weight:600;flex-shrink:0;white-space:nowrap;}
+.fam-chips{display:flex;flex-wrap:wrap;gap:5px;flex:1;}
+.f-chip{flex-shrink:0;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);user-select:none;transition:all 0.13s;white-space:nowrap;line-height:1.6;}
+.f-chip:active{transform:scale(0.96);}
+.f-chip.active{background:var(--accent);border-color:var(--accent);color:#ffffff;font-weight:700;}
+.f-chip.all-fchip.active{background:var(--bg4);border-color:var(--border2);color:var(--text);}
+
 /* DIVIDER */
 .divider{height:1px;background:var(--border);margin:20px 20px 0;}
 
@@ -107,6 +116,25 @@ html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
 .badge-lost{font-size:9px;font-weight:700;color:var(--orange);background:rgba(251,146,60,0.13);border-radius:4px;padding:1px 5px;flex-shrink:0;}
 .badge-new{font-size:9px;font-weight:700;color:var(--green);background:rgba(61,214,140,0.13);border-radius:4px;padding:1px 5px;flex-shrink:0;}
 
+/* SECTOR POPOVER */
+.sector-pop{position:fixed;z-index:999;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,0,0,0.18);width:520px;display:none;flex-direction:column;pointer-events:none;}
+.sector-pop.visible{display:flex;pointer-events:auto;}
+.sector-pop-list{overflow-y:visible;}
+.sector-pop-header{padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sector-pop-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sector-pop-sub{font-size:10px;color:var(--text3);margin-top:2px;}
+.sector-pop-cols{display:grid;grid-template-columns:1fr auto auto auto;gap:0 8px;padding:4px 14px;background:var(--bg3);border-bottom:1px solid var(--border2);flex-shrink:0;}
+.spc-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);font-weight:600;white-space:nowrap;}
+.spc-lbl.r{text-align:right;}
+.sector-pop-list{overflow-y:visible;}
+.sp-row{display:grid;grid-template-columns:1fr auto auto auto;gap:0 8px;padding:6px 14px;border-bottom:1px solid var(--border);align-items:center;transition:background 0.1s;}
+.sp-row:last-child{border-bottom:none;}
+.sp-row:hover{background:var(--bg3);}
+.sp-marca{font-size:10px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sp-base{font-family:'DM Mono',monospace;font-size:9px;color:var(--text2);white-space:nowrap;text-align:right;}
+.sp-comp{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);white-space:nowrap;text-align:right;}
+.sp-pct{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;white-space:nowrap;text-align:right;min-width:46px;}
+.sp-empty{padding:20px;text-align:center;font-size:11px;color:var(--text3);}
 /* B4 */
 .worst-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 @media(max-width:1000px){.worst-grid{grid-template-columns:1fr;}}
@@ -275,12 +303,18 @@ html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
       <div class="sep"></div>
       <div class="year-group">
         <div class="year-label">Canal</div>
-        <select class="ctrl-select" id="f-canal" style="min-width:160px" onchange="applyFilters()">
+        <select class="ctrl-select" id="f-canal" style="min-width:160px" onchange="onCanalChange()">
           <option value="all">Todos los canales</option>
           <option value="DIGITAL">Digital</option>
           <option value="PRINT">Print</option>
           <option value="EVENTOS">Eventos</option>
         </select>
+      </div>
+    </div>
+    <div class="fam-filter-row">
+      <span class="fam-filter-label">Familia</span>
+      <div class="fam-chips" id="fam-chips-row">
+        <span class="f-chip all-fchip active" onclick="toggleFam('all')">Todas</span>
       </div>
     </div>
   </div>
@@ -354,12 +388,12 @@ html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
       </div>
       <div class="worst-card">
         <div class="worst-card-header">
-          <div class="worst-card-title">🔴 Peores presupuestos medios por Producto</div>
-          <div class="worst-card-sub">PM = Ingreso neto ÷ nº líneas · por producto</div>
+          <div class="worst-card-title">🔴 Peores sectores por área</div>
+          <div class="worst-card-sub">Ingreso neto total · Área × Sector</div>
         </div>
         <div class="worst-col-labels">
-          <span class="wcl-name">Producto</span>
-          <span class="wcl-val">PM este año vs anterior</span>
+          <span class="wcl-name">Área / Sector</span>
+          <span class="wcl-val">Pérdida / Ganancia</span>
           <span class="wcl-pct">%</span>
         </div>
         <div class="worst-list" id="w-pm-prod"></div>
@@ -492,6 +526,8 @@ html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
 
 </div>
 
+<div id="sector-pop" class="sector-pop"></div>
+
 <script>
 const COL_MES='Mes inserción',COL_PUB='Publicación',COL_ANUN='Anunciante',
       COL_MARCA='Marca',COL_COMERCIAL='Comercial',
@@ -510,7 +546,7 @@ const FAM_DIGITAL=new Set(['Curated','Display','Programatica Display Directo','P
 const FAM_PRINT=new Set(['CERTIFICACIÓN','CONVENCIONAL','Curated','ELEMENTOS ESPECIALES',
   'Otras facturaciones','Patrocinio','Sponsorship']);
 
-let DATA=[], selectedMonths=new Set(), activePub=null;
+let DATA=[], selectedMonths=new Set(), selectedFamilies=new Set(), activePub=null;
 
 function classifyRow(r){
   const fam=(r[COL_FAM]||'').trim(), prod=(r[COL_PROD]||'').trim();
@@ -672,6 +708,7 @@ function populateFilters(){
   let html=`<span class="m-chip all-chip active" onclick="toggleMonth('all')">Todos</span>`;
   meses.forEach(m=>{html+=`<span class="m-chip" data-mes="${m}" onclick="toggleMonth('${m}')">${MESES_SHORT[m]||m}</span>`;});
   document.getElementById('months-row').innerHTML=html;
+  populateFamChips();
   populateBCSelector();
   renderBC();
   // Seleccionar ELLE por defecto si existe
@@ -703,8 +740,61 @@ function getRows(year){
     if(selectedMonths.size>0&&!selectedMonths.has(r._mes)) return false;
     if(canal!=='all'&&r._canal!==canal) return false;
     if(area!=='all'&&r._area!==area) return false;
+    if(selectedFamilies.size>0&&!selectedFamilies.has(famKey(r))) return false;
     return true;
   });
+}
+
+// Devuelve la clave de familia para una fila, distinguiendo Curated/Sponsorship por canal
+function famKey(r){
+  const fam=r._fam;
+  if(fam==='Curated') return r._canal==='PRINT'?'Curated (Print)':'Curated (Digital)';
+  if(fam==='Sponsorship') return r._canal==='PRINT'?'Sponsorship (Print)':'Sponsorship (Digital)';
+  return fam;
+}
+
+function onCanalChange(){
+  populateFamChips();
+  applyFilters();
+}
+
+function populateFamChips(){
+  const canal=document.getElementById('f-canal').value;
+  // Recopilar familias presentes en los datos según el canal seleccionado
+  const famSet=new Set();
+  DATA.forEach(r=>{
+    if(canal!=='all'&&r._canal!==canal) return;
+    famSet.add(famKey(r));
+  });
+
+  // Ordenar: primero "Curated/Sponsorship" con variantes agrupadas, luego el resto
+  const sorted=[...famSet].filter(Boolean).sort((a,b)=>a.localeCompare(b,'es'));
+
+  // Limpiar selección si las familias seleccionadas ya no están disponibles
+  selectedFamilies.forEach(f=>{ if(!famSet.has(f)) selectedFamilies.delete(f); });
+
+  let html=`<span class="f-chip all-fchip${selectedFamilies.size===0?' active':''}" onclick="toggleFam('all')">Todas</span>`;
+  sorted.forEach(fam=>{
+    const active=selectedFamilies.has(fam)?' active':'';
+    html+=`<span class="f-chip${active}" data-fam="${fam.replace(/"/g,'&quot;')}" onclick="toggleFam(this)">${fam}</span>`;
+  });
+  document.getElementById('fam-chips-row').innerHTML=html;
+}
+
+function toggleFam(el){
+  if(el==='all'){
+    selectedFamilies.clear();
+  } else {
+    const fam=el.dataset.fam;
+    if(selectedFamilies.has(fam)) selectedFamilies.delete(fam);
+    else selectedFamilies.add(fam);
+  }
+  // Actualizar clases
+  document.querySelectorAll('.f-chip').forEach(ch=>{
+    if(ch.classList.contains('all-fchip')) ch.classList.toggle('active',selectedFamilies.size===0);
+    else ch.classList.toggle('active',selectedFamilies.has(ch.dataset.fam));
+  });
+  applyFilters();
 }
 
 // Suma de ingresos (positivos Y negativos) → ingreso neto real
@@ -862,8 +952,8 @@ function renderRankingCard(elId,base,comp,keyFn,subKeyFn,canalSel){
 function renderWorst(base,comp){
   // Bloque 1: ingreso neto total por pub × sector (bruto real)
   renderWorstSectorSite('w-sector-site', base, comp);
-  // Bloque 2: presupuesto medio por producto
-  renderWorstPM('w-pm-prod', base, comp, r=>r._prod, it=>({name:it.k, sub:''}));
+  // Bloque 2: ingreso neto total por área × sector (bruto real)
+  renderWorstSectorArea('w-pm-prod', base, comp);
   // Bloque 3: presupuesto medio por producto × pub
   renderWorstPM('w-pm-prod-site', base, comp, r=>`${r._prod}|||${r._pub}`,
     it=>{const[a,b]=it.k.split('|||');return{name:a,sub:b};});
@@ -871,6 +961,7 @@ function renderWorst(base,comp){
 
 // Bloque 1: pérdida/ganancia bruta por pub × sector
 function renderWorstSectorSite(elId, base, comp){
+  _popData = []; // reset shared index
   const keyFn = r => `${r._pub}|||${r._sector}`;
   const bMap = aggSum(base, keyFn);
   const cMap = aggSum(comp, keyFn);
@@ -901,11 +992,71 @@ function renderWorstSectorSite(elId, base, comp){
     const pctCol = it.p !== null
       ? `<span class="w-pct ${it.p>=0?'w-pos':'w-neg'}">${fmtPct(it.p)}</span>`
       : `<span class="w-pct" style="color:var(--text3)">—</span>`;
-    html += `<div class="worst-row2">
+    const idx_s = _popData.push({type:'pub', dim1:it.pub, sector:it.sector}) - 1;
+    html += `<div class="worst-row2" style="cursor:pointer"
+      onmouseenter="showSectorPop(event,${idx_s})"
+      onmouseleave="hideSectorPop()">
       <span class="w-num">${i+1}</span>
       <div class="w-info">
         <div class="w-name">${it.sector}</div>
         <div class="w-sub">${it.pub}</div>
+        <div class="w-bar-wrap"><div class="w-bar ${it.diff>=0?'w-bar-pos':''}" style="width:${barW}%"></div></div>
+      </div>
+      ${diffCol}
+      ${pctCol}
+    </div>`;
+  });
+  document.getElementById(elId).innerHTML = html || '<div class="empty-msg">Sin datos comparables</div>';
+}
+// Bloque 2: pérdida/ganancia bruta por área × sector
+const AREA_MAP = {
+  'BRAND EXPERIENCE':           'Madrid',
+  'CLIENT EXPERIENCE LIFESTYLE':'Madrid',
+  'CLIENT EXPERIENCE LUJO':     'Madrid',
+  'CLIENT EXPERIENCE BARCELONA':'Barcelona',
+  'INTERNACIONAL':              'Internacional',
+  'PROGRAMÁTICA':               'Programática',
+};
+function mapArea(raw){ return AREA_MAP[raw.trim().toUpperCase()] || AREA_MAP[raw.trim()] || raw.trim(); }
+
+function renderWorstSectorArea(elId, base, comp){
+  // _popData continues from renderWorstSectorSite (indices are global)
+  const keyFn = r => `${mapArea(r._area)}|||${r._sector}`;
+  const bMap = aggSum(base, keyFn);
+  const cMap = aggSum(comp, keyFn);
+  const allKeys = new Set([...bMap.keys(), ...cMap.keys()]);
+  let items = [];
+  allKeys.forEach(k => {
+    if(!k) return;
+    const[area, sector] = k.split('|||');
+    if(!area || !sector) return;
+    const bv = bMap.get(k)||0;
+    const cv = cMap.get(k)||0;
+    const diff = bv - cv;
+    const p = cv !== 0 ? calcPct(bv, cv) : null;
+    items.push({area, sector: cleanSectorName(sector), bv, cv, diff, p});
+  });
+  items = items.filter(it => it.bv !== 0 || it.cv !== 0);
+  items.sort((a,b) => a.diff - b.diff);
+  const worst = items.slice(0,30);
+  const maxAbs = Math.max(...worst.map(it=>Math.abs(it.diff)), 1);
+  let html = '';
+  worst.forEach((it,i) => {
+    const barW = Math.min(100,(Math.abs(it.diff)/maxAbs)*100);
+    const diffCol = it.diff >= 0
+      ? `<span class="w-val-pos">${fmt(it.diff)}</span>`
+      : `<span class="w-val-neg">${fmt(it.diff)}</span>`;
+    const pctCol = it.p !== null
+      ? `<span class="w-pct ${it.p>=0?'w-pos':'w-neg'}">${fmtPct(it.p)}</span>`
+      : `<span class="w-pct" style="color:var(--text3)">—</span>`;
+    const idx_a = _popData.push({type:'area', dim1:it.area, sector:it.sector}) - 1;
+    html += `<div class="worst-row2" style="cursor:pointer"
+      onmouseenter="showSectorPop(event,${idx_a})"
+      onmouseleave="hideSectorPop()">
+      <span class="w-num">${i+1}</span>
+      <div class="w-info">
+        <div class="w-name">${it.sector}</div>
+        <div class="w-sub">${it.area}</div>
         <div class="w-bar-wrap"><div class="w-bar ${it.diff>=0?'w-bar-pos':''}" style="width:${barW}%"></div></div>
       </div>
       ${diffCol}
@@ -1106,9 +1257,12 @@ function renderBCGlobal() {
       s.type === 'prod' ? r._prod === s.value : r._fam === s.value
     );
 
-    if (!slotRows.length) { el.innerHTML = NO_DATA; return; }
+    // Solo marcas con ingreso superior a 0
+    const slotRowsConIngreso = slotRows.filter(r => r._ingreso > 0);
 
-    const sorted = [...slotRows]
+    if (!slotRowsConIngreso.length) { el.innerHTML = NO_DATA; return; }
+
+    const sorted = [...slotRowsConIngreso]
       .sort((a, b) => a._ingreso - b._ingreso)
       .slice(0, 30);
 
@@ -1454,6 +1608,114 @@ function renderAnunPanel(pub,canal){
     </div>`;
   setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
 }
+// ── SECTOR POPOVER ──
+let _popTimer = null;
+let _popData = []; // stores {type, dim1, sector} per rendered row
+const _pop = () => document.getElementById('sector-pop');
+
+function showSectorPop(e, idx){
+  const {type, dim1, sector} = _popData[idx];
+  // type: 'pub' or 'area'
+  // dim1: publicación o área mapeada
+  const yrBase = document.getElementById('yr-base').value;
+  const yrComp = document.getElementById('yr-comp').value;
+  if(!yrBase || !yrComp) return;
+
+  const base = getRows(yrBase);
+  const comp = getRows(yrComp);
+
+  // Filtrar filas que coincidan con sector + dim1
+  const matchFn = type === 'pub'
+    ? r => r._pub === dim1 && cleanSectorName(r._sector) === sector
+    : r => mapArea(r._area) === dim1 && cleanSectorName(r._sector) === sector;
+
+  const bRows = base.filter(matchFn);
+  const cRows = comp.filter(matchFn);
+
+  // Agrupar por marca
+  const bMap = aggSum(bRows, r => r._marca || r._anun || '(sin marca)');
+  const cMap = aggSum(cRows, r => r._marca || r._anun || '(sin marca)');
+
+  const allMarcas = new Set([...bMap.keys(), ...cMap.keys()]);
+  let items = [];
+  allMarcas.forEach(m => {
+    if(!m) return;
+    const bv = bMap.get(m) || 0;
+    const cv = cMap.get(m) || 0;
+    const diff = bv - cv;
+    const p = cv !== 0 ? calcPct(bv, cv) : null;
+    items.push({m, bv, cv, diff, p});
+  });
+  // Ordenar de mayor caída a menor (diff más negativo primero)
+  items.sort((a, b) => a.diff - b.diff);
+
+  const label = type === 'pub' ? dim1 : dim1;
+  const pop = _pop();
+  pop.innerHTML = `
+    <div class="sector-pop-header">
+      <div class="sector-pop-title">${esc(sector)}</div>
+      <div class="sector-pop-sub">${esc(label)} · ${yrBase} vs ${yrComp} · ${items.length} marcas</div>
+    </div>
+    <div class="sector-pop-cols">
+      <span class="spc-lbl">Marca</span>
+      <span class="spc-lbl r">Año base</span>
+      <span class="spc-lbl r">Año ant.</span>
+      <span class="spc-lbl r">%</span>
+    </div>
+    <div class="sector-pop-list">
+      ${items.length ? items.map(it => {
+        const pc = it.p === null ? 'zero-c' : it.p < 0 ? 'neg' : it.p > 0 ? 'pos' : 'zero-c';
+        const pStr = it.p !== null ? fmtPct(it.p) : (it.cv === 0 ? 'NUEVO' : '—');
+        const diffStr = it.diff !== 0 ? ` (${it.diff >= 0 ? '+' : ''}${fmt(it.diff)})` : '';
+        return `<div class="sp-row">
+          <span class="sp-marca" title="${esc(it.m)}">${esc(it.m)}</span>
+          <span class="sp-base">${fmt(it.bv)}${diffStr}</span>
+          <span class="sp-comp">${fmt(it.cv)}</span>
+          <span class="sp-pct ${pc}">${pStr}</span>
+        </div>`;
+      }).join('') : '<div class="sp-empty">Sin marcas</div>'}
+    </div>`;
+
+  positionPop(e, pop);
+  pop.classList.add('visible');
+}
+
+
+function positionPop(e, pop){
+  pop.style.visibility = 'hidden';
+  pop.style.display = 'flex';
+  pop.style.maxHeight = '';  // reset before measuring
+  const pw = pop.offsetWidth || 520;
+  const ph = pop.offsetHeight;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const margin = 12;
+  let x = e.clientX + 16;
+  let y = e.clientY + 16;
+  if(x + pw > vw - margin) x = e.clientX - pw - 16;
+  if(x < margin) x = margin;
+  // If natural height fits, no scroll. If not, cap it and re-enable scroll.
+  const availH = vh - y - margin;
+  if(ph > availH){
+    if(availH < 200){
+      // Try above the cursor instead
+      y = e.clientY - ph - 16;
+      if(y < margin) { y = margin; pop.style.maxHeight = (vh - margin*2) + 'px'; pop.style.overflowY = 'auto'; }
+    } else {
+      pop.style.maxHeight = availH + 'px';
+      pop.style.overflowY = 'auto';
+    }
+  }
+  pop.style.left = x + 'px';
+  pop.style.top  = y + 'px';
+  pop.style.visibility = '';
+}
+
+function hideSectorPop(){
+  const pop = _pop();
+  pop.classList.remove('visible');
+  pop.style.display = 'none';
+}
+
 </script>
 </body>
 </html>
