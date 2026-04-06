@@ -120,9 +120,12 @@ html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
 .sector-pop{position:fixed;z-index:999;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,0,0,0.18);width:520px;display:none;flex-direction:column;pointer-events:none;}
 .sector-pop.visible{display:flex;pointer-events:auto;}
 .sector-pop-list{overflow-y:visible;}
-.sector-pop-header{padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sector-pop-header{padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:flex-start;gap:8px;}
+.sector-pop-header-text{flex:1;min-width:0;}
 .sector-pop-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sector-pop-sub{font-size:10px;color:var(--text3);margin-top:2px;}
+.sector-pop-close{flex-shrink:0;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;font-size:12px;line-height:1;padding:4px 8px;cursor:pointer;color:var(--text2);display:none;}
+.touch-device .sector-pop-close{display:block;}
 .sector-pop-cols{display:grid;grid-template-columns:1fr auto auto auto;gap:0 8px;padding:4px 14px;background:var(--bg3);border-bottom:1px solid var(--border2);flex-shrink:0;}
 .spc-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);font-weight:600;white-space:nowrap;}
 .spc-lbl.r{text-align:right;}
@@ -135,6 +138,8 @@ html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
 .sp-comp{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);white-space:nowrap;text-align:right;}
 .sp-pct{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;white-space:nowrap;text-align:right;min-width:46px;}
 .sp-empty{padding:20px;text-align:center;font-size:11px;color:var(--text3);}
+/* Touch hint on hoverable rows */
+.touch-device .worst-row2[data-popidx]::after{content:'👆';font-size:9px;margin-left:4px;opacity:0.4;}
 /* B4 */
 .worst-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
 @media(max-width:1000px){.worst-grid{grid-template-columns:1fr;}}
@@ -993,9 +998,10 @@ function renderWorstSectorSite(elId, base, comp){
       ? `<span class="w-pct ${it.p>=0?'w-pos':'w-neg'}">${fmtPct(it.p)}</span>`
       : `<span class="w-pct" style="color:var(--text3)">—</span>`;
     const idx_s = _popData.push({type:'pub', dim1:it.pub, sector:it.sector}) - 1;
-    html += `<div class="worst-row2" style="cursor:pointer"
-      onmouseenter="showSectorPop(event,${idx_s})"
-      onmouseleave="hideSectorPop()">
+    html += `<div class="worst-row2" style="cursor:pointer" data-popidx="${idx_s}"
+      onmouseenter="onRowEnter(event,${idx_s})"
+      onmouseleave="onRowLeave(event)"
+      ontouchend="onRowTap(event,${idx_s})">
       <span class="w-num">${i+1}</span>
       <div class="w-info">
         <div class="w-name">${it.sector}</div>
@@ -1050,9 +1056,10 @@ function renderWorstSectorArea(elId, base, comp){
       ? `<span class="w-pct ${it.p>=0?'w-pos':'w-neg'}">${fmtPct(it.p)}</span>`
       : `<span class="w-pct" style="color:var(--text3)">—</span>`;
     const idx_a = _popData.push({type:'area', dim1:it.area, sector:it.sector}) - 1;
-    html += `<div class="worst-row2" style="cursor:pointer"
-      onmouseenter="showSectorPop(event,${idx_a})"
-      onmouseleave="hideSectorPop()">
+    html += `<div class="worst-row2" style="cursor:pointer" data-popidx="${idx_a}"
+      onmouseenter="onRowEnter(event,${idx_a})"
+      onmouseleave="onRowLeave(event)"
+      ontouchend="onRowTap(event,${idx_a})">
       <span class="w-num">${i+1}</span>
       <div class="w-info">
         <div class="w-name">${it.sector}</div>
@@ -1608,10 +1615,67 @@ function renderAnunPanel(pub,canal){
     </div>`;
   setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
 }
+// ── TOUCH DETECTION ──
+const isTouch = () => window.matchMedia('(hover: none)').matches || ('ontouchstart' in window);
+document.addEventListener('DOMContentLoaded', () => {
+  if (isTouch()) document.documentElement.classList.add('touch-device');
+});
+
 // ── SECTOR POPOVER ──
 let _popTimer = null;
 let _popData = []; // stores {type, dim1, sector} per rendered row
+let _activeTapIdx = null; // tracks which row is open on touch
 const _pop = () => document.getElementById('sector-pop');
+
+// Mouse (desktop): hover to show, leave to hide
+function onRowEnter(e, idx) {
+  if (isTouch()) return; // ignore on touch devices
+  clearTimeout(_popTimer);
+  showSectorPop(e, idx);
+}
+function onRowLeave(e) {
+  if (isTouch()) return;
+  // Small delay so user can move into the popover without it closing
+  _popTimer = setTimeout(() => {
+    // Only hide if mouse isn't over the popover
+    hideSectorPop();
+  }, 120);
+}
+
+// Touch (iPad): tap to toggle
+function onRowTap(e, idx) {
+  e.preventDefault();
+  e.stopPropagation();
+  const pop = _pop();
+  if (_activeTapIdx === idx && pop.classList.contains('visible')) {
+    hideSectorPop();
+    _activeTapIdx = null;
+  } else {
+    _activeTapIdx = idx;
+    // Use a synthetic event-like object with touch coordinates
+    const touch = e.changedTouches[0];
+    const fakeE = { clientX: touch.clientX, clientY: touch.clientY };
+    showSectorPop(fakeE, idx);
+  }
+}
+
+// Close popover when tapping outside
+document.addEventListener('touchend', (e) => {
+  const pop = _pop();
+  if (!pop || !pop.classList.contains('visible')) return;
+  if (!pop.contains(e.target) && !e.target.closest('[data-popidx]')) {
+    hideSectorPop();
+    _activeTapIdx = null;
+  }
+}, { passive: true });
+
+// Keep popover open when mousing over it (desktop)
+document.addEventListener('DOMContentLoaded', () => {
+  const pop = _pop();
+  if (!pop) return;
+  pop.addEventListener('mouseenter', () => clearTimeout(_popTimer));
+  pop.addEventListener('mouseleave', () => { hideSectorPop(); });
+});
 
 function showSectorPop(e, idx){
   const {type, dim1, sector} = _popData[idx];
@@ -1653,8 +1717,11 @@ function showSectorPop(e, idx){
   const pop = _pop();
   pop.innerHTML = `
     <div class="sector-pop-header">
-      <div class="sector-pop-title">${esc(sector)}</div>
-      <div class="sector-pop-sub">${esc(label)} · ${yrBase} vs ${yrComp} · ${items.length} marcas</div>
+      <div class="sector-pop-header-text">
+        <div class="sector-pop-title">${esc(sector)}</div>
+        <div class="sector-pop-sub">${esc(label)} · ${yrBase} vs ${yrComp} · ${items.length} marcas</div>
+      </div>
+      <button class="sector-pop-close" onclick="hideSectorPop()">✕</button>
     </div>
     <div class="sector-pop-cols">
       <span class="spc-lbl">Marca</span>
