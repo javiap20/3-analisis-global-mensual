@@ -468,8 +468,8 @@ td.avg-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12
   color: #e8e8f0;
   border-radius: 10px;
   padding: 14px 16px;
-  min-width: 520px;
-  max-width: 640px;
+  min-width: 760px;
+  max-width: 900px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.35);
   z-index: 9999;
   font-size: 12px;
@@ -477,7 +477,7 @@ td.avg-col { text-align: right; font-family: 'DM Mono', monospace; font-size: 12
 }
 .tt-cols {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0 16px;
 }
 .tt-col-divider {
@@ -772,6 +772,7 @@ function processArrayBuffer(buffer, fileName, source) {
       _mes:     String(row[COL_MES]  || '').trim(),
       _area:    (row[COL_AREA]   || '').trim(),
       _sector:  (row[COL_SECTOR] || '').trim(),
+      _pub:     (row[COL_PUB]   || '').trim(),
     }));
 
     document.getElementById('top-badge').style.display = '';
@@ -869,7 +870,8 @@ function renderTable() {
       lineas: 0, pos: 0, neg: 0, cero: 0,
       sumaPos: 0, sumaNeg: 0,
       areaMap: new Map(),
-      sectorMap: new Map()
+      sectorMap: new Map(),
+      pubMap: new Map(),
     });
     const g = map.get(key);
     g.lineas++;
@@ -892,6 +894,14 @@ function renderTable() {
     if (r._ingreso > 0)      { sg.sumaPos += r._ingreso; }
     else if (r._ingreso < 0) { sg.sumaNeg += r._ingreso; }
     else                     { sg.cero++; }
+    // publicación breakdown
+    const pubKey = r._pub || '(sin publicación)';
+    if (!g.pubMap.has(pubKey)) g.pubMap.set(pubKey, { lineas: 0, cero: 0, sumaPos: 0, sumaNeg: 0 });
+    const pg = g.pubMap.get(pubKey);
+    pg.lineas++;
+    if (r._ingreso > 0)      { pg.sumaPos += r._ingreso; }
+    else if (r._ingreso < 0) { pg.sumaNeg += r._ingreso; }
+    else                     { pg.cero++; }
   });
 
   // ── Build previous-year aggregates (only when a specific year is selected) ──
@@ -967,7 +977,22 @@ function renderTable() {
     });
     sectors.sort((a, b) => b.avg - a.avg);
 
-    return { ...g, neto, avgCon, avgSin, avgPrev, areas, sectors };
+    // Compute publication averages (for tooltip, filtered to product's canal)
+    const pubs = [];
+    g.pubMap.forEach((pg, pubName) => {
+      const pNeto = pg.sumaPos + pg.sumaNeg;
+      let pAvg;
+      if (zeroMode === 'sin') {
+        const pSin = pg.lineas - pg.cero;
+        pAvg = pSin > 0 ? pNeto / pSin : 0;
+      } else {
+        pAvg = pg.lineas > 0 ? pNeto / pg.lineas : 0;
+      }
+      pubs.push({ pub: pubName, avg: pAvg });
+    });
+    pubs.sort((a, b) => b.avg - a.avg);
+
+    return { ...g, neto, avgCon, avgSin, avgPrev, areas, sectors, pubs };
   });
 
   if (search) items = items.filter(g => g.prod.toLowerCase().includes(search));
@@ -1070,6 +1095,19 @@ function renderTable() {
     } else {
       ttSectorRows = `<div class="tt-row"><span class="tt-area" style="font-style:italic">Sin datos de sector</span></div>`;
     }
+    // Build tooltip publication rows (third column)
+    let ttPubRows = '';
+    if (g.pubs.length > 0) {
+      g.pubs.forEach(p => {
+        const cls = p.avg > avgVal ? 'tt-above' : p.avg < avgVal ? 'tt-below' : 'tt-equal';
+        ttPubRows += `<div class="tt-row">
+          <span class="tt-area">${p.pub}</span>
+          <span class="tt-val ${cls}">${fmt(p.avg)}</span>
+        </div>`;
+      });
+    } else {
+      ttPubRows = `<div class="tt-row"><span class="tt-area" style="font-style:italic">Sin datos de publicación</span></div>`;
+    }
     let vsHtml = '';
     if (showVsCol) {
       if (g.avgPrev === null) {
@@ -1122,6 +1160,11 @@ function renderTable() {
               <div style="border-left:1px solid rgba(255,255,255,0.08);padding-left:16px">
                 <div class="tt-title">Presupuesto medio por sector</div>
                 ${ttSectorRows}
+                <div class="tt-avg-line">Media del producto <span>${fmt(avgVal)}</span></div>
+              </div>
+              <div style="border-left:1px solid rgba(255,255,255,0.08);padding-left:16px">
+                <div class="tt-title">Presupuesto medio por publicación</div>
+                ${ttPubRows}
                 <div class="tt-avg-line">Media del producto <span>${fmt(avgVal)}</span></div>
               </div>
             </div>

@@ -241,6 +241,7 @@ h1 {
     <a class="hn-link" data-id="familia-producto"  href="digital-desglose-por-producto.html">Familia & Producto</a>
     <a class="hn-link" data-id="global-consulta"   href="dashboard.html">Global (Consulta)</a>
     <a class="hn-link" data-id="presupuestos"      href="presupuestos-medios.html">Presupuestos Medios</a>
+    <a class="hn-link" data-id="alertas"           href="dashboard-alertas.html">Alertas</a>
   </div>
 </nav>
 
@@ -801,24 +802,24 @@ function render(){
 function ordenarItemsPorFamilia(items, tipoFiltro) {
     if (tipoFiltro === "reparos") return items; // reparos van siempre por parejas, sin tocar
 
-    const ORDEN_DIGITAL = ["sponsorship","curated","social networks","display","branded content video","branded content","branded content syndicated"];
+    // DIGITAL: orden por Familia. Programática usa startsWith para cubrir todos sus tipos.
+    const ORDEN_DIGITAL = ["sponsorship","curated","social networks","display","vídeo","programática"];
     const ORDEN_PRINT   = ["convencional","curated","sponsorship"];
 
     const getOrden = (item) => {
         const fam = (item.Familia || "").toLowerCase();
-        const prod = (item.Product || "").toLowerCase();
-        let orden;
         if (currentType === 'DIGITAL') {
-            // Intentamos por producto primero, luego por familia
-            orden = ORDEN_DIGITAL.indexOf(prod);
-            if (orden === -1) orden = ORDEN_DIGITAL.indexOf(fam);
+            // Primero intentamos match exacto
+            let orden = ORDEN_DIGITAL.indexOf(fam);
+            // Si no hay exacto, buscamos si la familia empieza por alguno de los valores (cubre variantes de Programática)
+            if (orden === -1) orden = ORDEN_DIGITAL.findIndex(o => fam.startsWith(o));
+            return orden === -1 ? 998 : orden;
         } else if (currentType === 'PRINT') {
-            orden = ORDEN_PRINT.indexOf(fam);
-            if (orden === -1) orden = ORDEN_PRINT.indexOf(prod);
+            const orden = ORDEN_PRINT.indexOf(fam);
+            return orden === -1 ? 998 : orden;
         } else {
             return 999; // EVENTOS: sin orden especial de familia, solo por importe
         }
-        return orden === -1 ? 998 : orden;
     };
 
     return [...items].sort((a, b) => {
