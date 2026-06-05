@@ -863,7 +863,7 @@ function loadMixData() {
     const mixStatus = getEl('mixLoadStatusMsg');
 
     ['DIGITAL','PRINT','EVENTOS'].forEach(tipo => {
-        fetch(`PRODUCCION%20${tipo}.xlsx`)
+        fetch(`https://javiap20.github.io/datos-en-excel/PRODUCCION%20${tipo}.xlsx`)
             .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
             .then(buf => {
                 const wb = XLSX.read(buf, { type: 'array' });

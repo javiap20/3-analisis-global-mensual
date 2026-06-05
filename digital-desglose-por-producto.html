@@ -416,7 +416,7 @@ function selectType(type) {
   statusEl.innerText = "Cargando...";
   statusEl.style.color = "";
 
-  const excelUrl = `PRODUCCION%20${type}.xlsx`;
+  const excelUrl = `https://javiap20.github.io/datos-en-excel/PRODUCCION%20${type}.xlsx`;
   fetch(excelUrl)
     .then(resp => resp.ok ? resp.arrayBuffer() : Promise.reject())
     .then(buf => {

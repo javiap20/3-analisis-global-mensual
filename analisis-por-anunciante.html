@@ -534,7 +534,7 @@ function selectType2(type){
     if(btn) btn.className='type-btn'+(t===type?` active-${t.toLowerCase()}`:'');
   });
 
-  excelUrl2 = `PRODUCCION%20${type}.xlsx`;
+  excelUrl2 = `https://javiap20.github.io/datos-en-excel/PRODUCCION%20${type}.xlsx`;
   rawData2=[];
   ['topFilters2','yearFilters2','totalBlock2','advGrid2','advGridBest2'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';

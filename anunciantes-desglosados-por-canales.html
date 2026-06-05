@@ -605,10 +605,10 @@ function processWorkbook(arrayBuffer) {
     document.getElementById('resultsContent').style.display = 'none';
 }
 
-fetch('PRINT Y DIGITAL.xlsx')
+fetch('https://javiap20.github.io/datos-en-excel/PRINT Y DIGITAL.xlsx')
   .then(r => { if (!r.ok) throw new Error('No se pudo cargar el archivo'); return r.arrayBuffer(); })
   .then(buffer => {
-      document.getElementById('loadCard').querySelector('label').innerText = '✓ Datos cargados automáticamente: PRINT Y DIGITAL.xlsx';
+      document.getElementById('loadCard').querySelector('label').innerText = '✓ Datos cargados automáticamente: https://javiap20.github.io/datos-en-excel/PRINT Y DIGITAL.xlsx';
       document.getElementById('fileInput').style.display = 'none';
       processWorkbook(buffer);
   })

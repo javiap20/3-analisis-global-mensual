@@ -627,10 +627,10 @@ function onDrop(e){e.preventDefault();document.getElementById('upload-card').cla
 function onFileInput(inp){if(inp.files[0])processFile(inp.files[0]);}
 
 // ── CARGA AUTOMÁTICA DESDE SERVIDOR ──
-// Intenta cargar "PRINT Y DIGITAL.xlsx" desde la misma carpeta del servidor.
+// Intenta cargar "https://javiap20.github.io/datos-en-excel/PRINT Y DIGITAL.xlsx" desde la misma carpeta del servidor.
 // Si no encuentra el archivo (entorno local sin servidor), muestra la pantalla
 // de carga manual sin ningún error visible.
-const EXCEL_FILENAME = 'PRINT Y DIGITAL.xlsx';
+const EXCEL_FILENAME = 'https://javiap20.github.io/datos-en-excel/PRINT Y DIGITAL.xlsx';
 
 async function autoLoadFromServer() {
   try {
