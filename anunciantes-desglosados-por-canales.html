@@ -605,10 +605,10 @@ function processWorkbook(arrayBuffer) {
     document.getElementById('resultsContent').style.display = 'none';
 }
 
-fetch('https://javiap20.github.io/datos-en-excel/PRINT Y DIGITAL.xlsx')
+fetch('https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQCpQL7XxQQyQKzfLOSsA9_LAXGIt4j0H90jLe6ctOGg5uE')
   .then(r => { if (!r.ok) throw new Error('No se pudo cargar el archivo'); return r.arrayBuffer(); })
   .then(buffer => {
-      document.getElementById('loadCard').querySelector('label').innerText = '✓ Datos cargados automáticamente: https://javiap20.github.io/datos-en-excel/PRINT Y DIGITAL.xlsx';
+      document.getElementById('loadCard').querySelector('label').innerText = '✓ Datos cargados automáticamente: https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQCpQL7XxQQyQKzfLOSsA9_LAXGIt4j0H90jLe6ctOGg5uE';
       document.getElementById('fileInput').style.display = 'none';
       processWorkbook(buffer);
   })

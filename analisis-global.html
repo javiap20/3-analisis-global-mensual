@@ -686,7 +686,13 @@ function selectType(type) {
     });
 
     // URL Excel
-    excelUrl = `https://javiap20.github.io/datos-en-excel/PRODUCCION%20${type}.xlsx`;
+    // URLs de SharePoint para cada tipo de Excel
+    const sharepointUrls = {
+        'DIGITAL': 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQBtUVlYDjlRRoCaM7gsBE1eATJ8miXAVtnTs6Qcuioee-Y',
+        'PRINT': 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQCgA4a20KbOTIY3RsToUyewAROi0viVXnYcoXICS4M0cNU',
+        'EVENTOS': 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQDZNkSJLhXFToC-uOPwQt-KAcAnft0wGr7bEwH4pJhzMoU'
+    };
+    excelUrl = sharepointUrls[type];
 
     // Resetear datos y ocultar bloques
     rawData = [];

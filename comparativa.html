@@ -863,7 +863,14 @@ function loadMixData() {
     const mixStatus = getEl('mixLoadStatusMsg');
 
     ['DIGITAL','PRINT','EVENTOS'].forEach(tipo => {
-        fetch(`https://javiap20.github.io/datos-en-excel/PRODUCCION%20${tipo}.xlsx`)
+        (() => {
+      const sharepointUrls = {
+        'DIGITAL': 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQBtUVlYDjlRRoCaM7gsBE1eATJ8miXAVtnTs6Qcuioee-Y',
+        'PRINT': 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQCgA4a20KbOTIY3RsToUyewAROi0viVXnYcoXICS4M0cNU',
+        'EVENTOS': 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQDZNkSJLhXFToC-uOPwQt-KAcAnft0wGr7bEwH4pJhzMoU'
+      };
+      return fetch(sharepointUrls[tipo]);
+    })()
             .then(r => { if (!r.ok) throw new Error(); return r.arrayBuffer(); })
             .then(buf => {
                 const wb = XLSX.read(buf, { type: 'array' });

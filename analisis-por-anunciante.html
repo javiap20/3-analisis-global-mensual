@@ -534,7 +534,13 @@ function selectType2(type){
     if(btn) btn.className='type-btn'+(t===type?` active-${t.toLowerCase()}`:'');
   });
 
-  excelUrl2 = `https://javiap20.github.io/datos-en-excel/PRODUCCION%20${type}.xlsx`;
+  // URLs de SharePoint para cada tipo de Excel
+  const sharepointUrls2 = {
+    'DIGITAL': 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQBtUVlYDjlRRoCaM7gsBE1eATJ8miXAVtnTs6Qcuioee-Y',
+    'PRINT': 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQCgA4a20KbOTIY3RsToUyewAROi0viVXnYcoXICS4M0cNU',
+    'EVENTOS': 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQDZNkSJLhXFToC-uOPwQt-KAcAnft0wGr7bEwH4pJhzMoU'
+  };
+  excelUrl2 = sharepointUrls2[type];
   rawData2=[];
   ['topFilters2','yearFilters2','totalBlock2','advGrid2','advGridBest2'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.style.display='none';

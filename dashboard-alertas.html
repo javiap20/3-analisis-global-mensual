@@ -28,7 +28,9 @@ html > body::-webkit-scrollbar-thumb{background:#9098b0;border-radius:4px;}
 html > body::-webkit-scrollbar-thumb:hover{background:#6b7494;}
 
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:200;background:rgba(245,246,248,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.topbar{position:sticky;top:0;z-index:200;background:rgba(245,246,248,0.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;flex-direction:column;gap:8px;}
+.topbar-row1{display:flex;align-items:center;justify-content:space-between;width:100%;}
+.topbar-row2{display:flex;justify-content:center;width:100%;}
 .brand{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;letter-spacing:-0.3px;display:flex;align-items:center;gap:10px;}
 .brand-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);}
 .top-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 10px;}
@@ -627,10 +629,10 @@ function onDrop(e){e.preventDefault();document.getElementById('upload-card').cla
 function onFileInput(inp){if(inp.files[0])processFile(inp.files[0]);}
 
 // ── CARGA AUTOMÁTICA DESDE SERVIDOR ──
-// Intenta cargar "https://javiap20.github.io/datos-en-excel/PRINT Y DIGITAL.xlsx" desde la misma carpeta del servidor.
+// Intenta cargar "https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQCpQL7XxQQyQKzfLOSsA9_LAXGIt4j0H90jLe6ctOGg5uE" desde la misma carpeta del servidor.
 // Si no encuentra el archivo (entorno local sin servidor), muestra la pantalla
 // de carga manual sin ningún error visible.
-const EXCEL_FILENAME = 'https://javiap20.github.io/datos-en-excel/PRINT Y DIGITAL.xlsx';
+const EXCEL_FILENAME = 'https://hearstspain-my.sharepoint.com/personal/japaricio_hearst_es/_layouts/15/download.aspx?share=IQCpQL7XxQQyQKzfLOSsA9_LAXGIt4j0H90jLe6ctOGg5uE';
 
 async function autoLoadFromServer() {
   try {
