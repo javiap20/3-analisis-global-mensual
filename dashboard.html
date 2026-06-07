@@ -773,10 +773,11 @@ async function parseAndRender(buffer, fileName) {
 async function loadExcel() {
   try {
     setLoader(10, 'Buscando archivo...');
-    const resp = await fetch(FILE_NAME + '?t=' + Date.now());
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const res = await fetch(FILE_NAME, { cache: 'no-cache' });
+    if (!res.ok) throw new Error('No encontrado');
     setLoader(35, 'Descargando...');
-    await parseAndRender(await resp.arrayBuffer(), FILE_NAME);
+    const buf = await res.arrayBuffer();
+    parseAndRender(buf, FILE_NAME);
   } catch(e) {
     setLoader(0,'');
     showUploadManual(`No se encontró "${FILE_NAME}" (${e.message}). Puedes cargarlo manualmente:`);
@@ -1807,7 +1808,7 @@ function closeChartModal(e) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeChartModal(); });
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
-loadExcel();
+document.addEventListener('DOMContentLoaded', loadExcel);
 </script>
 </body>
 </html>
